@@ -4,11 +4,12 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDir
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.teamcode.lib.math.Vector
 import org.firstinspires.ftc.vision.VisionPortal
+import org.firstinspires.ftc.vision.VisionProcessor
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 
 class Vision {
-    lateinit var instance: AprilTagProcessor
+    lateinit var instance: AprilTagStream
     lateinit var visionPortal: VisionPortal
     lateinit var lastDetection: AprilTagDetection
     private lateinit var fieldTags: Map<Int, Vector>
@@ -35,7 +36,7 @@ class Vision {
     private fun init(lensIntrinsics: LensIntrinsics, decimation: Float = 2f, fieldTags: Map<Int, Vector>) {
         this.fieldTags = fieldTags
 
-        instance = AprilTagProcessor.Builder().setLensIntrinsics(
+        instance = AprilTagStream.Builder().setLensIntrinsics(
                 lensIntrinsics.fx,
                 lensIntrinsics.fy,
                 lensIntrinsics.cx,

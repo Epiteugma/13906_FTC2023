@@ -8,6 +8,8 @@ class PIDController(var kP: Double = 0.0, var kI: Double = 0.0, var kD: Double =
     var o = 0.0
     var pe = 0.0
 
+    constructor(coefficients: Coefficients) : this(coefficients.kP, coefficients.kI, coefficients.kD)
+
     fun update(error: Double, delta: Long): Result {
         this.p = this.kP * error
         this.i = this.kI * error * delta

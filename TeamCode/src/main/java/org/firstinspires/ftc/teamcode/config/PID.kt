@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.config
 import org.firstinspires.ftc.teamcode.lib.PIDController
 
 object PID {
+    val updateRate = 100
+
     val motorCoefficients = mapOf(
             "frontLeft" to PIDController.Coefficients(),
             "backLeft" to PIDController.Coefficients(),

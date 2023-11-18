@@ -65,4 +65,8 @@ class Vector(var x: Double, var y: Double, var z: Double, var unit: DistanceUnit
 
         return this
     }
+
+    override fun toString(): String {
+        return "[%.2f, %.2f, %.2f] ${this.unit}".format(this.x, this.y, this.z)
+    }
 }

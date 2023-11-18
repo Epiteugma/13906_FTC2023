@@ -8,16 +8,20 @@ import org.firstinspires.ftc.teamcode.lib.Vision
 
 @Autonomous(name = "Vision Test", group = "FTC24")
 class Vision : LinearOpMode() {
-    val vision = Vision()
+    private val vision = Vision()
 
     override fun runOpMode() {
         Robot.initHardware(this.hardwareMap)
+        this.telemetry = Robot.bindDashboard(this.telemetry)
+
         vision.init(
-                Field.lensInstrinsics,
+                Field.lensIntrinsics,
                 Field.decimation,
                 Robot.camera,
                 Field.fieldTags
         )
+
+        Robot.initDashboardStream(vision.instance, 30.0)
         waitForStart()
 
         while (opModeIsActive()) {
@@ -25,6 +29,7 @@ class Vision : LinearOpMode() {
 
             for(tag in detections) telemetry.addData("Detected tag", tag.id)
 
+            telemetry.addData("Detections", detections.size)
             telemetry.addData("Tag relative position", vision.tagRelativePosition)
             telemetry.addData("Field relative position", vision.fieldRelativePosition)
             telemetry.addData("Robot angle", vision.heading)

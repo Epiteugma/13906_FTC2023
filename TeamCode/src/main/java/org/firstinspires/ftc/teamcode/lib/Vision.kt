@@ -1,16 +1,19 @@
 package org.firstinspires.ftc.teamcode.lib
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl
 import org.firstinspires.ftc.teamcode.lib.math.Vector
 import org.firstinspires.ftc.vision.VisionPortal
-import org.firstinspires.ftc.vision.VisionProcessor
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
+import java.lang.Thread.sleep
+import kotlin.concurrent.thread
 
 class Vision {
     lateinit var instance: AprilTagStream
-    lateinit var visionPortal: VisionPortal
+    lateinit var portal: VisionPortal
     lateinit var lastDetection: AprilTagDetection
     private lateinit var fieldTags: Map<Int, Vector>
 
@@ -49,7 +52,7 @@ class Vision {
     fun init(lensIntrinsics: LensIntrinsics, decimation: Float = 2f, webcam: WebcamName, fieldTags: Map<Int, Vector>) {
         this.init(lensIntrinsics, decimation, fieldTags)
 
-        this.visionPortal = VisionPortal.Builder()
+        this.portal = VisionPortal.Builder()
                 .setCamera(webcam)
                 .addProcessor(this.instance)
                 .build()
@@ -58,7 +61,7 @@ class Vision {
     fun init(lensIntrinsics: LensIntrinsics, decimation: Float = 2f, cameraDirection: BuiltinCameraDirection, fieldTags: Map<Int, Vector>) {
         this.init(lensIntrinsics, decimation, fieldTags)
 
-        this.visionPortal = VisionPortal.Builder()
+        this.portal = VisionPortal.Builder()
                 .setCamera(cameraDirection)
                 .addProcessor(this.instance)
                 .build()

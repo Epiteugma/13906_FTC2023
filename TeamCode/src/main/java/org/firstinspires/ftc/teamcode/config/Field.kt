@@ -13,6 +13,9 @@ object Field {
             6 to Vector(0.0, 0.0)
     )
 
-    val lensIntrinsics = Vision.LensIntrinsics()//817.819, 817.819, 321.062, 238.135)
-    val decimation = 2f
+
+    object Camera {
+        val lensIntrinsics = Vision.LensIntrinsics(817.819, 817.819, 321.062, 238.135)
+        val decimation = 2f
+    }
 }

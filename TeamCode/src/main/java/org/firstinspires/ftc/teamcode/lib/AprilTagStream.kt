@@ -29,9 +29,9 @@ class AprilTagStream(fx: Double, fy: Double, cx: Double, cy: Double, outputUnits
     override fun onDrawFrame(canvas: Canvas, onscreenWidth: Int, onscreenHeight: Int, scaleBmpPxToCanvasPx: Float, scaleCanvasDensity: Float, userContext: Any?) {
         val bmp = Bitmap.createBitmap(this.lastFrame.get())
 
-        val returnValue = super.onDrawFrame(Canvas(bmp), onscreenWidth, onscreenHeight, scaleBmpPxToCanvasPx, scaleCanvasDensity, userContext)
+        super.onDrawFrame(Canvas(bmp), onscreenWidth, onscreenHeight, 1f, scaleCanvasDensity, userContext)
         lastDrawnFrame.set(bmp)
-        return returnValue
+        return super.onDrawFrame(canvas, onscreenWidth, onscreenHeight, scaleBmpPxToCanvasPx, scaleCanvasDensity, userContext)
     }
 
     override fun getFrameBitmap(continuation: Continuation<out Consumer<Bitmap>>) {

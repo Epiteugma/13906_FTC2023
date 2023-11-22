@@ -20,11 +20,15 @@ class Vision {
     val tagRelativePosition = Vector(0.0, 0.0)
     var fieldRelativePosition = Vector(0.0, 0.0)
     var heading = 0.0
+    var latestData = false
 
     class LensIntrinsics(val fx: Double = 0.0, val fy: Double = 0.0, val cx: Double = 0.0, val cy: Double = 0.0)
 
     fun updatePosition(detection: AprilTagDetection) {
-        if(detection.metadata == null) return
+        if(detection.metadata == null) {
+            this.latestData = false
+            return
+        }
 
         tagRelativePosition.x = detection.ftcPose.x
         tagRelativePosition.y = detection.ftcPose.y
@@ -34,6 +38,8 @@ class Vision {
         val fieldTag = this.fieldTags[detection.id]?.clone() ?: Vector(0.0, 0.0)
         fieldTag.sub(tagRelativePosition)
         this.fieldRelativePosition = fieldTag
+
+        this.latestData = true
     }
 
     private fun init(lensIntrinsics: LensIntrinsics, decimation: Float = 2f, fieldTags: Map<Int, Vector>) {
@@ -73,7 +79,7 @@ class Vision {
             if(detections.size > 0) {
                 this.lastDetection = detections[0]
                 this.updatePosition(detections[0])
-            }
+            } else this.latestData = false
 
             return detections
         }

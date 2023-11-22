@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.config.PID
 import org.firstinspires.ftc.teamcode.config.Robot
 import org.firstinspires.ftc.teamcode.lib.PIDController
 
-@Autonomous(name = "PID Test", group = "FTC24")
+@Autonomous(name = "PID Test", group = "FTC23")
 class PID : LinearOpMode() {
     private val motorControllers = mutableMapOf<String, PIDController>()
     private var driveTarget = 0.0

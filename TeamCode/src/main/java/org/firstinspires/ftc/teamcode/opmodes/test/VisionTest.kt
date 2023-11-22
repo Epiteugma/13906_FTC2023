@@ -6,8 +6,8 @@ import org.firstinspires.ftc.teamcode.config.Field
 import org.firstinspires.ftc.teamcode.config.Robot
 import org.firstinspires.ftc.teamcode.lib.Vision
 
-@Autonomous(name = "Vision Test", group = "FTC24")
-class Vision : LinearOpMode() {
+@Autonomous(name = "Vision Test", group = "FTC23")
+class VisionTest : LinearOpMode() {
     private val vision = Vision()
 
     override fun runOpMode() {

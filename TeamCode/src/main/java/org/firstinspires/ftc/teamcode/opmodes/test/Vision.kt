@@ -32,7 +32,7 @@ class Vision : LinearOpMode() {
             telemetry.addData("Detections", detections.size)
             telemetry.addData("Tag relative position", vision.tagRelativePosition)
             telemetry.addData("Field relative position", vision.fieldRelativePosition)
-            telemetry.addData("Robot angle", vision.heading)
+            telemetry.addData("Robot angle", "%.2f".format(vision.heading))
 
             telemetry.update()
         }

@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.lib
 
-class PIDController(var kP: Double = 0.0, var kI: Double = 0.0, var kD: Double = 0.0) {
+class PIDController(var kP: Double = 1.0, var kI: Double = 0.0, var kD: Double = 0.0) {
     var p = 0.0
     var i = 0.0
     var it = 0.0

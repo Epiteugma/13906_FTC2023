@@ -25,15 +25,17 @@ class VisionDrive : LinearOpMode() {
                 Robot.camera,
                 Field.aprilTags
         )
+        Robot.initDashboardStream(vision.instance, 30.0)
         waitForStart()
 
         var lastSample = System.currentTimeMillis()
         while (opModeIsActive()) {
             if(System.currentTimeMillis() - lastSample < pidRate) continue
             lastSample += pidRate
+            vision.detections
 
             // Every rotation = 0.25 power
-            driveController.update(Robot.cmToTicks(target.x - vision.fieldRelativePosition.x).toDouble() / (Robot.ticksPerRev * Robot.driveGearbox * 4), pidRate)
+            driveController.update(Robot.cmToTicks(target.y - vision.fieldRelativePosition.y) / (Robot.ticksPerRev * Robot.driveGearbox * 4), pidRate)
 
             for(i in 0..<Robot.motors.size) {
                 if(!Robot.drivetrainLeft.contains(i) && !Robot.drivetrainRight.contains(i)) continue
@@ -42,6 +44,11 @@ class VisionDrive : LinearOpMode() {
                 motor.power = if(vision.latestData) driveController.o
                 else 0.0
             }
+
+            telemetry.addData("Latest data", vision.latestData)
+            telemetry.addData("Field pos", vision.fieldRelativePosition)
+            telemetry.addData("DriveController", "%.2f".format(driveController.o))
+            telemetry.update()
         }
     }
 }

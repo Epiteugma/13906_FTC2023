@@ -24,27 +24,27 @@ object Field {
     val aprilTags = mapOf(
             1 to Vector(
                     -0.5 * this.size + Backdrop.offset + Backdrop.aprilTagOffset + Backdrop.aprilTagSize / 2,
-                    this.size - Backdrop.offset
+                    0.5 * this.size - Backdrop.offset
             ),
             2 to Vector(
                     -0.5 * this.size + Backdrop.offset + Backdrop.aprilTagOffset + Backdrop.aprilTagSize + Backdrop.aprilTagSpacing + Backdrop.aprilTagSize / 2,
-                    this.size - Backdrop.offset
+                    0.5 * this.size - Backdrop.offset
             ),
             3 to Vector(
                     -0.5 * this.size + Backdrop.offset + Backdrop.aprilTagOffset + (Backdrop.aprilTagSize + Backdrop.aprilTagSpacing) * 2 + Backdrop.aprilTagSize / 2,
-                    this.size - Backdrop.offset
+                    0.5 * this.size - Backdrop.offset
             ),
             4 to Vector(
-                    0.5 * this.size - Backdrop.offset + Backdrop.aprilTagOffset + (Backdrop.aprilTagSize + Backdrop.aprilTagSpacing) * 2 + Backdrop.aprilTagSize / 2,
-                    this.size - Backdrop.offset
+                    0.5 * this.size - Backdrop.offset - Backdrop.aprilTagOffset - (Backdrop.aprilTagSize + Backdrop.aprilTagSpacing) * 2 - Backdrop.aprilTagSize / 2,
+                    0.5 * this.size - Backdrop.offset
             ),
             5 to Vector(
-                    0.5 * this.size - Backdrop.offset + Backdrop.aprilTagOffset + Backdrop.aprilTagSize + Backdrop.aprilTagSpacing + Backdrop.aprilTagSize / 2,
-                    this.size - Backdrop.offset
+                    0.5 * this.size - Backdrop.offset - Backdrop.aprilTagOffset - Backdrop.aprilTagSize - Backdrop.aprilTagSpacing - Backdrop.aprilTagSize / 2,
+                    0.5 * this.size - Backdrop.offset
             ),
             6 to Vector(
-                    0.5 * this.size - Backdrop.offset + Backdrop.aprilTagOffset + Backdrop.aprilTagSize / 2,
-                    this.size - Backdrop.offset
+                    0.5 * this.size - Backdrop.offset - Backdrop.aprilTagOffset - Backdrop.aprilTagSize / 2,
+                    0.5 * this.size - Backdrop.offset
             )
     )
 }

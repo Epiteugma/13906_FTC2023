@@ -2,11 +2,9 @@ package org.firstinspires.ftc.teamcode.opmodes.test
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl
 import org.firstinspires.ftc.teamcode.config.Field
 import org.firstinspires.ftc.teamcode.config.Robot
 import org.firstinspires.ftc.teamcode.lib.Vision
-import java.util.concurrent.TimeUnit
 
 @Autonomous(name = "Vision Test", group = "FTC24")
 class Vision : LinearOpMode() {
@@ -20,7 +18,7 @@ class Vision : LinearOpMode() {
                 Field.Camera.lensIntrinsics,
                 Field.Camera.decimation,
                 Robot.camera,
-                Field.fieldTags
+                Field.aprilTags
         )
 
         Robot.initDashboardStream(vision.instance, 30.0)

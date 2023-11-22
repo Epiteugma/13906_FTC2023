@@ -26,12 +26,12 @@ class Vision {
     fun updatePosition(detection: AprilTagDetection) {
         if(detection.metadata == null) return
 
-        tagRelativePosition.x = detection.ftcPose.x * 2.54
-        tagRelativePosition.y = detection.ftcPose.y * 2.54
-        tagRelativePosition.z = detection.ftcPose.y * 2.54
+        tagRelativePosition.x = detection.ftcPose.x
+        tagRelativePosition.y = detection.ftcPose.y
+        tagRelativePosition.z = detection.ftcPose.y
         this.heading = detection.ftcPose.bearing
 
-        val fieldTag = this.fieldTags[detection.id] ?: Vector(0.0, 0.0)
+        val fieldTag = this.fieldTags[detection.id]?.clone() ?: Vector(0.0, 0.0)
         fieldTag.sub(tagRelativePosition)
         this.fieldRelativePosition = fieldTag
     }

@@ -45,7 +45,7 @@ class AprilTagStream(fx: Double, fy: Double, cx: Double, cy: Double, outputUnits
         private var cy: Double = 0.0;
         private var tagFamily = TagFamily.TAG_36h11
         private var tagLibrary = AprilTagGameDatabase.getCurrentGameTagLibrary()
-        private var outputUnitsLength = DistanceUnit.INCH
+        private var outputUnitsLength = DistanceUnit.CM
         private var outputUnitsAngle = AngleUnit.DEGREES
         private var threads = THREADS_DEFAULT
 

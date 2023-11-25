@@ -20,6 +20,7 @@ class VisionTest : LinearOpMode() {
                 Robot.camera,
                 Field.aprilTags
         )
+        vision.setCameraOffset(Robot.cameraOffset)
 
         Robot.initDashboardStream(vision.instance, 30.0)
         waitForStart()

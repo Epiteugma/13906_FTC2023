@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.config
 
+import com.qualcomm.hardware.bosch.BNO055IMU
 import com.qualcomm.robotcore.hardware.DcMotor.*
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple.*
@@ -8,10 +9,11 @@ import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.robotcore.external.stream.CameraStreamSource
+import org.firstinspires.ftc.teamcode.lib.math.Vector
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 
 object Robot {
-    val wheelRadius = 6.5
+    val wheelRadius = 7.0
     val ticksPerRev = 28
     val driveGearbox = 20.0
 
@@ -26,7 +28,17 @@ object Robot {
     val servos = mutableMapOf<String, Servo>()
 
     private val cameraName = "Webcam 1"
+    val cameraOffset = Vector(3.5, 30.0)
     lateinit var camera: WebcamName
+
+    lateinit var imu: BNO055IMU
+
+    private fun getIMUParameters(): BNO055IMU.Parameters {
+        val params = BNO055IMU.Parameters()
+        params.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC
+        params.angleUnit = BNO055IMU.AngleUnit.DEGREES
+        return params
+    }
 
     fun initHardware(hardwareMap: HardwareMap) {
         for(i in 0..<this.motorNames.size) {
@@ -44,6 +56,9 @@ object Robot {
         for(name in this.servoNames) this.servos[name] = hardwareMap.get(Servo::class.java, name)
 
         this.camera = hardwareMap.get(WebcamName::class.java, this.cameraName)
+
+        this.imu = hardwareMap.get(BNO055IMU::class.java, "imu")
+        this.imu.initialize(this.getIMUParameters())
     }
 
     fun bindDashboard(telemetry: Telemetry): Telemetry {

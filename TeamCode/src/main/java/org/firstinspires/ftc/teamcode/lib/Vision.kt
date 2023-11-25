@@ -16,6 +16,7 @@ class Vision {
     lateinit var portal: VisionPortal
     lateinit var lastDetection: AprilTagDetection
     private lateinit var fieldTags: Map<Int, Vector>
+    private var cameraOffset = Vector(0.0, 0.0)
 
     val tagRelativePosition = Vector(0.0, 0.0)
     var fieldRelativePosition = Vector(0.0, 0.0)
@@ -24,15 +25,16 @@ class Vision {
 
     class LensIntrinsics(val fx: Double = 0.0, val fy: Double = 0.0, val cx: Double = 0.0, val cy: Double = 0.0)
 
-    fun updatePosition(detection: AprilTagDetection) {
-        if(detection.metadata == null) {
+    private fun updatePosition(detection: AprilTagDetection) {
+        if(detection?.metadata == null) {
             this.latestData = false
             return
         }
 
-        tagRelativePosition.x = detection.ftcPose.x
-        tagRelativePosition.y = detection.ftcPose.y
-        tagRelativePosition.z = detection.ftcPose.y
+        tagRelativePosition.x = detection.ftcPose.x * 2.54
+        tagRelativePosition.y = detection.ftcPose.y * 2.54
+        tagRelativePosition.z = detection.ftcPose.y * 2.54
+        tagRelativePosition.add(this.cameraOffset)
         this.heading = detection.ftcPose.bearing
 
         val fieldTag = this.fieldTags[detection.id]?.clone() ?: Vector(0.0, 0.0)
@@ -40,6 +42,16 @@ class Vision {
         this.fieldRelativePosition = fieldTag
 
         this.latestData = true
+    }
+
+    fun updatePosition() {
+        val detections = this.instance.detections
+        if(detections.size > 0) this.updatePosition(detections[0])
+        else this.latestData = false
+    }
+
+    fun setCameraOffset(offset: Vector) {
+        this.cameraOffset = offset
     }
 
     private fun init(lensIntrinsics: LensIntrinsics, decimation: Float = 2f, fieldTags: Map<Int, Vector>) {

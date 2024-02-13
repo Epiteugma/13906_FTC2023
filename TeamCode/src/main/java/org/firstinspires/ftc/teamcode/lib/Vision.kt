@@ -1,15 +1,10 @@
 package org.firstinspires.ftc.teamcode.lib
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl
 import org.firstinspires.ftc.teamcode.lib.math.Vector
 import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
-import java.lang.Thread.sleep
-import kotlin.concurrent.thread
 
 class Vision {
     lateinit var instance: AprilTagStream
@@ -26,7 +21,7 @@ class Vision {
     class LensIntrinsics(val fx: Double = 0.0, val fy: Double = 0.0, val cx: Double = 0.0, val cy: Double = 0.0)
 
     private fun updatePosition(detection: AprilTagDetection) {
-        if(detection?.metadata == null) {
+        if(detection.metadata == null) {
             this.latestData = false
             return
         }

@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.lib.math
 
 class Vector(var x: Double, var y: Double, var z: Double, var unit: DistanceUnit) {
 
-    constructor(x: Double, y: Double) : this(x, y, 0.0, DistanceUnit.CENTIMETER)
-    constructor(x: Double, y: Double, z: Double) : this(x, y, z, DistanceUnit.CENTIMETER)
+    constructor(x: Double, y: Double) : this(x, y, 0.0, DistanceUnit.CM)
+    constructor(x: Double, y: Double, z: Double) : this(x, y, z, DistanceUnit.CM)
 
     fun clone(): Vector {
         return Vector(x, y, z, unit)
@@ -19,15 +19,19 @@ class Vector(var x: Double, var y: Double, var z: Double, var unit: DistanceUnit
     }
 
     fun toMM(): Vector {
-        return this.convert(DistanceUnit.MILLIMETER)
+        return this.convert(DistanceUnit.MM)
     }
 
     fun toCM(): Vector {
-        return this.convert(DistanceUnit.CENTIMETER)
+        return this.convert(DistanceUnit.CM)
     }
 
     fun toM(): Vector {
-        return this.convert(DistanceUnit.METER)
+        return this.convert(DistanceUnit.M)
+    }
+
+    fun toIN(): Vector {
+        return this.convert(DistanceUnit.IN)
     }
 
     fun add(vec: Vector): Vector {

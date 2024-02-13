@@ -1,0 +1,7 @@
+Gamepad 1:
+    LStickY = drive
+    LStickX = strafe
+    RStickX = turn
+
+Gamepad 2:
+    LStickY = slides up/down

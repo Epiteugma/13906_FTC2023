@@ -1,13 +1,9 @@
 package org.firstinspires.ftc.teamcode.lib.math
 
-enum class DistanceUnit {
+enum class DistanceUnit(val multiplier: Double) {
 
-    MILLIMETER(1.0),
-    CENTIMETER(10.0),
-    METER(1_000.0);
-
-    val multiplier: Double
-    constructor(multiplier: Double) {
-        this.multiplier = multiplier
-    }
+    MM(1.0),
+    CM(10.0),
+    M(1_000.0),
+    IN(25.4);
 }

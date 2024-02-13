@@ -1,0 +1,9 @@
+Control Hub:
+    Motors: []
+    Digital: []
+    Servos: []
+
+Expansion Hub:
+    Motors: []
+    Digital: []
+    Servos: []

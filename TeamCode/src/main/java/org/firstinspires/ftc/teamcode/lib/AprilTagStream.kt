@@ -14,7 +14,14 @@ import org.opencv.android.Utils
 import org.opencv.core.Mat
 import java.util.concurrent.atomic.AtomicReference
 
-class AprilTagStream(fx: Double, fy: Double, cx: Double, cy: Double, outputUnitsLength: DistanceUnit, outputUnitsAngle: AngleUnit, tagLibrary: AprilTagLibrary, drawAxes: Boolean, drawCube: Boolean, drawOutline: Boolean, drawTagID: Boolean, tagFamily: TagFamily, threads: Int) : AprilTagProcessorImpl(fx, fy, cx, cy, outputUnitsLength, outputUnitsAngle, tagLibrary, drawAxes, drawCube, drawOutline, drawTagID, tagFamily, threads), CameraStreamSource {
+class AprilTagStream(fx: Double, fy: Double, cx: Double, cy: Double, outputUnitsLength:
+DistanceUnit, outputUnitsAngle: AngleUnit, tagLibrary: AprilTagLibrary, drawAxes: Boolean,
+                     drawCube: Boolean, drawOutline: Boolean, drawTagID: Boolean, tagFamily:
+                     TagFamily, threads: Int, suppressCalibrationWarnings: Boolean = false) :
+    AprilTagProcessorImpl(fx,
+    fy, cx, cy,
+    outputUnitsLength, outputUnitsAngle, tagLibrary, drawAxes, drawCube, drawOutline, drawTagID,
+    tagFamily, threads, suppressCalibrationWarnings), CameraStreamSource {
     private val lastFrame = AtomicReference(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565))
     private val lastDrawnFrame = AtomicReference(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565))
 

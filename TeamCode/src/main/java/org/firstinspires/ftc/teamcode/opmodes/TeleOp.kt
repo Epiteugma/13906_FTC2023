@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes
 
+import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import org.firstinspires.ftc.teamcode.OpMode
@@ -9,27 +10,39 @@ import kotlin.math.abs
 
 @TeleOp(name = "FTC 2023", group = "FTC23")
 class TeleOp : OpMode() {
+    @Config
     class Multipliers {
-        val drive = 1.0
+        val drive = 0.7
         val turn = 1.0
         val strafe = 1.0
 
-        val slide = 0.3
-        val slideHold = 1.0
+        val backRight = 1.0
+        val frontRight = 1.0
+        val backLeft = 1.2
+        val frontLeft = 1.2
 
-        val arm = 0.45
+        var slide = 0.5
+
+        val arm = 0.35
         val armHold = 0.15
 
-        var slideTilter = 0.4
+        val slideTilter = 0.5
+
+        val clawPivotPower = 0.4
     }
 
     class LastPositions {
         var arm = 0
     }
 
+    class ButtonsSates {
+        var triangle = false
+    }
+
     private val mlt = Multipliers()
     private val lastPositions = LastPositions()
-
+    private val buttonStates2 = ButtonsSates()
+    
     override fun setup() {
         super.setup()
 
@@ -51,13 +64,13 @@ class TeleOp : OpMode() {
 
         // DRIVETRAIN
         this.drivetrain.front.left.power =
-                drivePower + turnPower + strafePower
+            (drivePower + turnPower + strafePower) * mlt.frontLeft
         this.drivetrain.front.right.power =
-                drivePower - turnPower - strafePower
+            (drivePower - turnPower - strafePower) * mlt.frontRight
         this.drivetrain.back.left.power =
-                drivePower + turnPower - strafePower
+            (drivePower + turnPower - strafePower) * mlt.backLeft
         this.drivetrain.back.right.power =
-                drivePower - turnPower + strafePower
+            (drivePower - turnPower + strafePower) * mlt.backRight
 
         this.telemetry.addLine("DRIVETRAIN")
         this.telemetry.addData("front left", "%.2f".format(this.drivetrain.front.left.power))
@@ -92,8 +105,19 @@ class TeleOp : OpMode() {
         this.telemetry.addLine()
 
         this.telemetry.addLine("CLAW")
+        this.telemetry.addData("claw pivot power", this.clawPivot.power)
         this.telemetry.addData("left pos", this.claw.left.position)
         this.telemetry.addData("right pos", this.claw.right.position)
+        this.telemetry.addLine()
+
+        val clazz = org.firstinspires.ftc.teamcode.opmodes.TeleOp::class.java
+        for (field in clazz.declaredFields) {
+            this.telemetry.addData(field.name, field.get(this))
+        }
+
+        this.telemetry.addLine("MLTS")
+        this.telemetry.addData("slide", this.mlt.slide)
+
 
         this.telemetry.update()
     }
@@ -146,5 +170,35 @@ class TeleOp : OpMode() {
             UTILS.unlockMotor(this.arm, armPower * this.mlt.arm)
             this.lastPositions.arm = this.arm.currentPosition
         } else UTILS.lockMotor(this.arm, this.mlt.armHold, this.lastPositions.arm)
+
+//        if(UTILS.wasJustPressed(this.gamepad2.dpad_up, buttonStates.dpadUp)){
+//            this.clawPivot.position += 0.1
+//            buttonStates.dpadUp = true
+//        }
+//        else {
+//            buttonStates.dpadDown = false
+//        }
+//        if (UTILS.wasJustPressed(this.gamepad2.dpad_down, buttonStates.dpadDown)) {
+//            this.clawPivot.position += -0.1
+//            this.buttonStates.dpadDown = true
+//        }
+//        else {
+//            buttonStates.dpadDown = false
+//        }
+        if (this.gamepad2.dpad_up) this.clawPivot.power = this.mlt.clawPivotPower
+        else if (this.gamepad2.dpad_down) this.clawPivot.power = -this.mlt.clawPivotPower
+        else this.clawPivot.power = 0.0
+
+
+        if(this.gamepad2.triangle){
+            if (buttonStates2.triangle){
+                mlt.slide = 0.5
+                buttonStates2.triangle = true
+            }
+            else {
+                mlt.slide = 1.0
+                buttonStates2.triangle = false
+            }
+        }
     }
 }

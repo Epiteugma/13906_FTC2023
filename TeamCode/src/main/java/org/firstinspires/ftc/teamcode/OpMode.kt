@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
+import com.qualcomm.robotcore.hardware.CRServo
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.Servo
@@ -36,13 +37,13 @@ class Claw {
     lateinit var right:Servo
 
     fun close() {
-        this.left.position = 0.5
-        this.right.position = 0.3
+        this.left.position = 0.45
+        this.right.position = 0.25
     }
 
     fun open() {
-        this.left.position = 0.3
-        this.right.position = 0.5
+        this.left.position = 0.1
+        this.right.position = 0.7
     }
 }
 
@@ -54,7 +55,7 @@ abstract class OpMode : LinearOpMode() {
 
     lateinit var arm: DcMotor
 
-    lateinit var clawPivot: Servo
+    lateinit var clawPivot: CRServo
 
     override fun runOpMode() {
         this.setup()
@@ -91,12 +92,12 @@ abstract class OpMode : LinearOpMode() {
 
         this.arm = this.hardwareMap.get(DcMotor::class.java, "arm")
 
-        this.clawPivot = this.hardwareMap.get(Servo::class.java, "clawPivot")
+        this.clawPivot = this.hardwareMap.get(CRServo::class.java, "clawPivot")
 
         this.claw.right = this.hardwareMap.get(Servo::class.java, "rightClaw")
         this.claw.left = this.hardwareMap.get(Servo::class.java, "leftClaw")
 
-        this.claw.open()
+        this.claw.close()
     }
     abstract fun run()
     open fun cleanup() { }

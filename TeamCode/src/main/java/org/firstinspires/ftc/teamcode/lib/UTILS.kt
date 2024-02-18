@@ -32,10 +32,10 @@ object UTILS {
 //    }
 
     fun lockMotor(motor: DcMotor, holdPower: Double, savedPosition: Int, invertEncoder: Boolean =
-        false, ticksPerRev: Int = 8192) {
+        false, ticksPerRev: Int = 8192, encoderMotor: DcMotor = motor) {
         motor.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
 
-        val dp = savedPosition - (motor.currentPosition * if(invertEncoder) -1.0 else 1.0)
+        val dp = savedPosition - (encoderMotor.currentPosition * if(invertEncoder) -1.0 else 1.0)
 
         val calculatedHoldPower = holdPower * 1 / (1+exp(-abs(dp) / ticksPerRev))
         motor.power = if (dp > 0) calculatedHoldPower

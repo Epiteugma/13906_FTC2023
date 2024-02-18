@@ -26,8 +26,8 @@ class TeleOp : OpMode() {
         var slideHold = 0.15
         var slide = 1.0
 
-        val slideTilter = 0.5
-        var slideTilterHold = 0.0
+        val slideTilter = 1.0
+        var slideTilterHold = 0.2
 
         val arm = 0.35
         val armHold = 0.15
@@ -100,25 +100,10 @@ class TeleOp : OpMode() {
         this.slides.right.motor.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         UTILS.resetEncoder(this.slides.left.motor)
         UTILS.resetEncoder(this.slides.right.motor)
-        UTILS.lockMotor(
-            this.slides.left.motor,
-            this.mlt.slideHold,
-            this.lastPositions.leftSlide
-        )
-        UTILS.lockMotor(
-            this.slides.right.motor,
-            this.mlt.slideHold,
-            this.lastPositions.rightSlide
-        )
 
         // SLIDE TILTER
         this.slideTilter.motor.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-        UTILS.resetEncoder(this.slideTilter.motor)
-//        UTILS.lockMotor(
-//            this.slideTilter.motor,
-//            this.mlt.slideTilterHold,
-//            this.lastPositions.slideTilter
-//        )
+        UTILS.resetEncoder(this.drivetrain.back.right)
     }
 
     private fun resetArm() {
@@ -191,9 +176,21 @@ class TeleOp : OpMode() {
         if (slideTilterPower < 0 && slideTilter.limits[0]!!.isPressed) slideTilterPower = 0.0
 
         // MOVE SLIDE TILTER
-        if (abs(slideTilterPower) > this.mlt.slideTilterHold)
-            this.slideTilter.motor.power = slideTilterPower
-        else this.slideTilter.motor.power = 0.0
+        if (abs(slideTilterPower) > this.mlt.slideTilterHold) {
+            UTILS.unlockMotor(this.slideTilter.motor, slideTilterPower)
+            this.lastPositions.slideTilter = this.drivetrain.back.right.currentPosition
+//            this.slideTilter.motor.power = slideTilterPower
+        }
+        else
+//            this.slideTilter.motor.power = 0.0
+            UTILS.lockMotor(
+                    this.slideTilter.motor,
+                    this.mlt.slideTilterHold,
+                    this.lastPositions.slideTilter,
+                    true,
+                    8192,
+                    this.drivetrain.back.right
+            )
     }
 
     private fun moveClaw() {
@@ -227,7 +224,7 @@ class TeleOp : OpMode() {
 
         this.telemetry.addLine("SLIDE TILTER")
         this.telemetry.addData("Last Position", this.lastPositions.slideTilter)
-        this.telemetry.addData("Current Position", this.slideTilter.motor.currentPosition)
+        this.telemetry.addData("Current Position", this.drivetrain.back.right.currentPosition)
         this.telemetry.addData("Power", "%.2f".format(this.slideTilter.motor.power))
         this.telemetry.addData("Limit Back", this.slideTilter.limits[0]!!.isPressed)
         this.telemetry.addData("Limit Front", this.slideTilter.limits[1]!!.isPressed)
@@ -253,7 +250,7 @@ class TeleOp : OpMode() {
         this.telemetry.addLine("ARM")
         this.telemetry.addData("Last Position", this.lastPositions.arm)
         this.telemetry.addData("Current Position", this.arm.currentPosition)
-        this.telemetry.addData("Power", this.arm.power)
+        this.telemetry.addData("Power", "%.2f".format(this.arm.power))
         this.telemetry.addLine()
 
         this.telemetry.addLine("CLAW")

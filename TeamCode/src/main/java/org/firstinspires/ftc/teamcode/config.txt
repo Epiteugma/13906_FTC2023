@@ -1,9 +1,25 @@
 Control Hub:
-    Motors: []
-    Digital: []
-    Servos: []
+    Motors: {
+        0: arm,
+        1: backRight / slideTilter encoder,
+        2: frontRight,
+        3: rightSlide,
+    }
+    Digital: {
+        2: magneticLimDownRight,
+        4: magneticLimUpRight,
+    }
+    Servos: {}
 
 Expansion Hub:
-    Motors: []
-    Digital: []
-    Servos: []
+    Motors: {
+        0: slideTilter,
+        1: frontLeft,
+        2: backLeft,
+        3: leftSlide,
+    }
+    Digital: {
+        0: magneticLimDownLeft,
+        2: magneticLimUpLeft,
+    }
+    Servos: {}

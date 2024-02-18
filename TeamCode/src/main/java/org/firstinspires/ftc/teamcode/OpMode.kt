@@ -53,8 +53,9 @@ abstract class OpMode : LinearOpMode() {
     var slideTilter = SlideTitler()
     var claw = Claw()
 
-    lateinit var arm: DcMotor
+    lateinit var planeLauncher: Servo
 
+    lateinit var arm: DcMotor
     lateinit var clawPivot: CRServo
 
     override fun runOpMode() {
@@ -98,6 +99,8 @@ abstract class OpMode : LinearOpMode() {
         this.claw.left = this.hardwareMap.get(Servo::class.java, "leftClaw")
 
         this.claw.close()
+
+        this.planeLauncher = this.hardwareMap.get(Servo::class.java, "planeLauncher")
     }
     abstract fun run()
     open fun cleanup() { }

@@ -12,8 +12,10 @@ import kotlin.math.abs
 class TeleOp : OpMode() {
     @Config
     class Multipliers {
+        var global = 1.0
+
         val drive = 0.7
-        val turn = 1.0
+        val turn = 0.65
         val strafe = 1.0
 
         val backRight = 1.0
@@ -21,27 +23,29 @@ class TeleOp : OpMode() {
         val backLeft = 1.2
         val frontLeft = 1.2
 
-        var slide = 0.5
+        var slideHold = 0.15
+        var slide = 1.0
+
+        val slideTilter = 0.5
+        var slideTilterHold = 0.0
 
         val arm = 0.35
         val armHold = 0.15
-
-        val slideTilter = 0.5
 
         val clawPivotPower = 0.4
     }
 
     class LastPositions {
         var arm = 0
-    }
-
-    class ButtonsSates {
-        var triangle = false
+        var leftSlide = 0
+        var rightSlide = 0
+        var slideTilter = 0
     }
 
     private val mlt = Multipliers()
     private val lastPositions = LastPositions()
-    private val buttonStates2 = ButtonsSates()
+
+    private var globalToggleLock = false
     
     override fun setup() {
         super.setup()
@@ -57,86 +61,99 @@ class TeleOp : OpMode() {
     }
 
     override fun run() {
-        // CALCULATE DRIVE POWERS
-        val drivePower = -this.gamepad1.left_stick_y * this.mlt.drive
-        val turnPower = this.gamepad1.right_stick_x* this.mlt.turn
-        val strafePower = this.gamepad1.left_stick_x * this.mlt.strafe
-
-        // DRIVETRAIN
-        this.drivetrain.front.left.power =
-            (drivePower + turnPower + strafePower) * mlt.frontLeft
-        this.drivetrain.front.right.power =
-            (drivePower - turnPower - strafePower) * mlt.frontRight
-        this.drivetrain.back.left.power =
-            (drivePower + turnPower - strafePower) * mlt.backLeft
-        this.drivetrain.back.right.power =
-            (drivePower - turnPower + strafePower) * mlt.backRight
-
-        this.telemetry.addLine("DRIVETRAIN")
-        this.telemetry.addData("front left", "%.2f".format(this.drivetrain.front.left.power))
-        this.telemetry.addData("front right", "%.2f".format(this.drivetrain.front.right.power))
-        this.telemetry.addData("back left", "%.2f".format(this.drivetrain.back.left.power))
-        this.telemetry.addData("back right", "%.2f".format(this.drivetrain.back.right.power))
-        this.telemetry.addLine()
-
-        this.telemetry.addLine("SLIDE TILTER")
-        this.telemetry.addData("power", "%.2f".format(this.slideTilter.motor.power))
-        this.telemetry.addData("limit back", this.slideTilter.limits[0]!!.isPressed)
-        this.telemetry.addData("limit front", this.slideTilter.limits[1]!!.isPressed)
-        this.telemetry.addLine()
-
-        this.telemetry.addLine("SLIDES")
-        this.telemetry.addLine("LEFT")
-//        this.telemetry.addData("Position", this.slides.left.motor.currentPosition)
-        this.telemetry.addData("power", "%.2f".format(this.slides.left.motor.power))
-        this.telemetry.addData("limit down", this.slides.left.limits[0]!!.isPressed)
-        this.telemetry.addData("limit up", this.slides.left.limits[1]!!.isPressed)
-        this.telemetry.addLine("RIGHT")
-//        this.telemetry.addData("Position", this.slides.right.motor.currentPosition)
-        this.telemetry.addData("power", "%.2f".format(this.slides.right.motor.power))
-        this.telemetry.addData("limit down", this.slides.right.limits[0]!!.isPressed)
-        this.telemetry.addData("limit up", this.slides.right.limits[1]!!.isPressed)
-        this.telemetry.addLine()
-        
-        this.telemetry.addLine("ARM")
-        this.telemetry.addData("arm current pos", this.arm.currentPosition)
-        this.telemetry.addData("arm target pos", this.arm.targetPosition)
-        this.telemetry.addData("arm power", this.arm.power)
-        this.telemetry.addLine()
-
-        this.telemetry.addLine("CLAW")
-        this.telemetry.addData("claw pivot power", this.clawPivot.power)
-        this.telemetry.addData("left pos", this.claw.left.position)
-        this.telemetry.addData("right pos", this.claw.right.position)
-        this.telemetry.addLine()
-
-        val clazz = org.firstinspires.ftc.teamcode.opmodes.TeleOp::class.java
-        for (field in clazz.declaredFields) {
-            this.telemetry.addData(field.name, field.get(this))
-        }
-
-        this.telemetry.addLine("MLTS")
-        this.telemetry.addData("slide", this.mlt.slide)
-
-
-        this.telemetry.update()
+        this.moveRobot()
+        this.printTelemetry()
     }
 
     private fun setupT() {
-        // RESET SLIDES
-        this.slides.left.motor.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-        this.slides.right.motor.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-
-        // RESET ARM
-        this.arm.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-        UTILS.resetEncoder(this.arm)
-
-        // LOCK ARM
-        UTILS.lockMotor(this.arm, this.mlt.armHold, this.lastPositions.arm)
+        this.resetSlides()
+        this.resetArm()
     }
 
     private fun runT() {
-        val slidePower = -this.gamepad2.left_stick_y * this.mlt.slide
+        this.toggleGlobalPower()
+
+        this.moveSlides()
+        this.moveClaw()
+        this.moveArm()
+
+        // PLANE LAUNCHER
+        if (this.gamepad1.touchpad)
+            this.planeLauncher.position = 0.5
+
+//        if(this.gamepad2.triangle){
+//            if (buttonStates2.triangle){
+//                mlt.slide = 0.5
+//                mlt.slideHold = 0.3
+//                buttonStates2.triangle = true
+//            }
+//            else {
+//                mlt.slide = 0.8
+//                mlt.slideHold = 0.2
+//                buttonStates2.triangle = false
+//            }
+//        }
+    }
+
+    private fun resetSlides() {
+        this.slides.left.motor.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        this.slides.right.motor.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        UTILS.resetEncoder(this.slides.left.motor)
+        UTILS.resetEncoder(this.slides.right.motor)
+        UTILS.lockMotor(
+            this.slides.left.motor,
+            this.mlt.slideHold,
+            this.lastPositions.leftSlide
+        )
+        UTILS.lockMotor(
+            this.slides.right.motor,
+            this.mlt.slideHold,
+            this.lastPositions.rightSlide
+        )
+
+        // SLIDE TILTER
+        this.slideTilter.motor.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        UTILS.resetEncoder(this.slideTilter.motor)
+//        UTILS.lockMotor(
+//            this.slideTilter.motor,
+//            this.mlt.slideTilterHold,
+//            this.lastPositions.slideTilter
+//        )
+    }
+
+    private fun resetArm() {
+        this.arm.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+        UTILS.resetEncoder(this.arm)
+        UTILS.lockMotor(this.arm, this.mlt.armHold, this.lastPositions.arm)
+    }
+
+    private fun toggleGlobalPower() {
+        if (gamepad1.cross && !this.globalToggleLock)
+            this.mlt.global =
+                if (this.mlt.global == 1.0) 0.5
+                else 1.0
+        this.globalToggleLock = gamepad1.cross
+    }
+
+    private fun moveRobot() {
+        // CALCULATE DRIVE POWERS
+        val drivePower = -this.gamepad1.left_stick_y * this.mlt.drive * this.mlt.global
+        val turnPower = this.gamepad1.right_stick_x* this.mlt.turn * this.mlt.global
+        val strafePower = this.gamepad1.left_stick_x * this.mlt.strafe * this.mlt.global
+
+        // DRIVETRAIN
+        this.drivetrain.front.left.power =
+            (drivePower + turnPower + strafePower) * this.mlt.frontLeft
+        this.drivetrain.front.right.power =
+            (drivePower - turnPower - strafePower) * this.mlt.frontRight
+        this.drivetrain.back.left.power =
+            (drivePower + turnPower - strafePower) * this.mlt.backLeft
+        this.drivetrain.back.right.power =
+            (drivePower - turnPower + strafePower) * this.mlt.backRight
+    }
+
+    private fun moveSlides() {
+        val slidePower = -this.gamepad2.left_stick_y * this.mlt.slide * this.mlt.global
 
         var left = slidePower
         var right = slidePower
@@ -150,55 +167,100 @@ class TeleOp : OpMode() {
         if (right > 0 && this.slides.right.limits[1]!!.isPressed) right = 0.0
 
         // MOVE SLIDES
-        this.slides.left.motor.power = left
-        this.slides.right.motor.power = right
+        if (abs(left) > this.mlt.slideHold) {
+            UTILS.unlockMotor(this.slides.left.motor, left)
+            this.lastPositions.leftSlide = this.slides.left.motor.currentPosition
+        }
+        else
+            UTILS.lockMotor(this.slides.left.motor, this.mlt.slideHold, this.lastPositions.leftSlide)
 
-        var slideTilterPower = -this.gamepad1.right_stick_y * this.mlt.slideTilter
+        if (abs(right) > this.mlt.slideHold) {
+            UTILS.unlockMotor(this.slides.right.motor, right)
+            this.lastPositions.rightSlide = this.slides.right.motor.currentPosition
+        }
+        else
+            UTILS.lockMotor(this.slides.right.motor, this.mlt.slideHold, this.lastPositions.rightSlide)
 
+        var slideTilterPower =
+            (this.gamepad1.right_trigger - this.gamepad1.left_trigger) *
+                    this.mlt.slideTilter *
+                    this.mlt.global
+
+        // TILTER LIMIT SWITCHES
         if (slideTilterPower > 0 && slideTilter.limits[1]!!.isPressed) slideTilterPower = 0.0
         if (slideTilterPower < 0 && slideTilter.limits[0]!!.isPressed) slideTilterPower = 0.0
 
-        this.slideTilter.motor.power = slideTilterPower
+        // MOVE SLIDE TILTER
+        if (abs(slideTilterPower) > this.mlt.slideTilterHold)
+            this.slideTilter.motor.power = slideTilterPower
+        else this.slideTilter.motor.power = 0.0
+    }
 
+    private fun moveClaw() {
         if(this.gamepad2.right_bumper)
             this.claw.close()
         else if(this.gamepad2.left_bumper)
             this.claw.open()
 
-        var armPower = -this.gamepad2.right_stick_y
-        if (abs(armPower) > this.mlt.armHold) {
-            UTILS.unlockMotor(this.arm, armPower * this.mlt.arm)
-            this.lastPositions.arm = this.arm.currentPosition
-        } else UTILS.lockMotor(this.arm, this.mlt.armHold, this.lastPositions.arm)
-
-//        if(UTILS.wasJustPressed(this.gamepad2.dpad_up, buttonStates.dpadUp)){
-//            this.clawPivot.position += 0.1
-//            buttonStates.dpadUp = true
-//        }
-//        else {
-//            buttonStates.dpadDown = false
-//        }
-//        if (UTILS.wasJustPressed(this.gamepad2.dpad_down, buttonStates.dpadDown)) {
-//            this.clawPivot.position += -0.1
-//            this.buttonStates.dpadDown = true
-//        }
-//        else {
-//            buttonStates.dpadDown = false
-//        }
+        // CLAW PIVOT
         if (this.gamepad2.dpad_up) this.clawPivot.power = this.mlt.clawPivotPower
         else if (this.gamepad2.dpad_down) this.clawPivot.power = -this.mlt.clawPivotPower
         else this.clawPivot.power = 0.0
+    }
 
+    private fun moveArm() {
+        val armPower = -this.gamepad2.right_stick_y * this.mlt.arm * this.mlt.global
 
-        if(this.gamepad2.triangle){
-            if (buttonStates2.triangle){
-                mlt.slide = 0.5
-                buttonStates2.triangle = true
-            }
-            else {
-                mlt.slide = 1.0
-                buttonStates2.triangle = false
-            }
-        }
+        if (abs(armPower) > this.mlt.armHold) {
+            UTILS.unlockMotor(this.arm, armPower)
+            this.lastPositions.arm = this.arm.currentPosition
+        } else UTILS.lockMotor(this.arm, this.mlt.armHold, this.lastPositions.arm)
+    }
+
+    private fun printTelemetry() {
+        this.telemetry.addLine("DRIVETRAIN")
+        this.telemetry.addData("Front Left", "%.2f".format(this.drivetrain.front.left.power))
+        this.telemetry.addData("Front Right", "%.2f".format(this.drivetrain.front.right.power))
+        this.telemetry.addData("Back Left", "%.2f".format(this.drivetrain.back.left.power))
+        this.telemetry.addData("Back Right", "%.2f".format(this.drivetrain.back.right.power))
+        this.telemetry.addLine()
+
+        this.telemetry.addLine("SLIDE TILTER")
+        this.telemetry.addData("Last Position", this.lastPositions.slideTilter)
+        this.telemetry.addData("Current Position", this.slideTilter.motor.currentPosition)
+        this.telemetry.addData("Power", "%.2f".format(this.slideTilter.motor.power))
+        this.telemetry.addData("Limit Back", this.slideTilter.limits[0]!!.isPressed)
+        this.telemetry.addData("Limit Front", this.slideTilter.limits[1]!!.isPressed)
+        this.telemetry.addLine()
+
+        this.telemetry.addLine("SLIDES")
+
+        this.telemetry.addLine("LEFT")
+        this.telemetry.addData("Last Position", this.lastPositions.leftSlide)
+        this.telemetry.addData("Current Position", this.slides.left.motor.currentPosition)
+        this.telemetry.addData("Power", "%.2f".format(this.slides.left.motor.power))
+        this.telemetry.addData("Limit Down", this.slides.left.limits[0]!!.isPressed)
+        this.telemetry.addData("Limit Up", this.slides.left.limits[1]!!.isPressed)
+
+        this.telemetry.addLine("RIGHT")
+        this.telemetry.addData("Last Position", this.lastPositions.rightSlide)
+        this.telemetry.addData("Current Position", this.slides.right.motor.currentPosition)
+        this.telemetry.addData("Power", "%.2f".format(this.slides.right.motor.power))
+        this.telemetry.addData("Limit Down", this.slides.right.limits[0]!!.isPressed)
+        this.telemetry.addData("Limit Up", this.slides.right.limits[1]!!.isPressed)
+        this.telemetry.addLine()
+
+        this.telemetry.addLine("ARM")
+        this.telemetry.addData("Last Position", this.lastPositions.arm)
+        this.telemetry.addData("Current Position", this.arm.currentPosition)
+        this.telemetry.addData("Power", this.arm.power)
+        this.telemetry.addLine()
+
+        this.telemetry.addLine("CLAW")
+        this.telemetry.addData("Claw Pivot Power", this.clawPivot.power)
+        this.telemetry.addData("Left Position", this.claw.left.position)
+        this.telemetry.addData("Right Position", this.claw.right.position)
+
+        this.telemetry.update()
     }
 }

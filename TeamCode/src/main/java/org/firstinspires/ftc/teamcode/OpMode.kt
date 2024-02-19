@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.TouchSensor
-import org.firstinspires.ftc.teamcode.opmodes.TeleOp
 
 class MotorColl {
     lateinit var left: DcMotor
@@ -25,6 +24,16 @@ class Drivetrain {
     }
 }
 
+class OdometryEncoders {
+    lateinit var left: DcMotor
+    lateinit var right: DcMotor
+    lateinit var center: DcMotor
+    
+    val ticksPerRev = 8192
+    val wheelDiameter = 6.0 / 2.0
+    val wheelCircumference = this.wheelDiameter * Math.PI
+}
+
 class Slides {
     val left = Slide()
     val right = Slide()
@@ -37,7 +46,12 @@ class Slide {
 
 class SlideTitler {
     lateinit var motor:DcMotor
+    lateinit var encoder:DcMotor
     var limits = arrayOfNulls<TouchSensor>(2)
+    
+    val ticksPerRev = 28
+    val gearRatio = 5.0/3.0
+    val slideTilterTicksPerRev = this.ticksPerRev * this.gearRatio
 }
 
 class Claw {
@@ -81,6 +95,7 @@ class Multipliers {
 
 abstract class OpMode : LinearOpMode() {
     val drivetrain = Drivetrain()
+    val odometryEncoders = OdometryEncoders()
     val slides = Slides()
     var slideTilter = SlideTitler()
     var claw = Claw()
@@ -111,6 +126,11 @@ abstract class OpMode : LinearOpMode() {
         this.drivetrain.back.left = this.hardwareMap.get(DcMotor::class.java, "backLeft")
         this.drivetrain.back.right = this.hardwareMap.get(DcMotor::class.java, "backRight")
         this.drivetrain.back.right.direction = DcMotorSimple.Direction.REVERSE
+        
+        // odometry encoders
+        this.odometryEncoders.left = this.drivetrain.front.left
+        this.odometryEncoders.right = this.drivetrain.front.right
+        this.odometryEncoders.center = this.drivetrain.back.left
 
         this.slides.left.motor = this.hardwareMap.get(DcMotor::class.java, "leftSlide")
         this.slides.left.limits[0] = this.hardwareMap.get(TouchSensor::class.java,
@@ -126,6 +146,7 @@ abstract class OpMode : LinearOpMode() {
             "magneticLimUpRight")
 
         this.slideTilter.motor = this.hardwareMap.get(DcMotor::class.java, "slideTilter")
+        this.slideTilter.encoder = this.drivetrain.back.right
         this.slideTilter.limits[0] = this.hardwareMap.get(TouchSensor::class.java, "limBack")
         this.slideTilter.limits[1] = this.hardwareMap.get(TouchSensor::class.java, "limFront")
 

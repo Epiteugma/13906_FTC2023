@@ -42,12 +42,4 @@ object UTILS {
             else if (dp < 0) -calculatedHoldPower
             else 0.0
     }
-
-    fun wasJustPressed(current: Boolean, previous: Boolean): Boolean {
-        return current && !previous
-    }
-
-    fun wasJustReleased(current: Boolean, previous: Boolean): Boolean {
-        return !current && previous
-    }
 }

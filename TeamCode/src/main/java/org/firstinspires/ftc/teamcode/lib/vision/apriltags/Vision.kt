@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.lib
+package org.firstinspires.ftc.teamcode.lib.vision.apriltags
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName

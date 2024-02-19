@@ -1,8 +1,15 @@
 Gamepad 1:
-    LStickY = drive
-    LStickX = strafe
-    RStickX = turn
-    RStickY = slide tilter
+    LStickY = drive forward/backward
+    LStickX = strafe left/right
+    RStickX = turn left/right
+    RTrigger = slide tilter forward
+    LTrigger = slide tilter backward
+    Touchpad = paper launcher launch
 
 Gamepad 2:
     LStickY = slides up/down
+    RStickY = arm forward/backward
+    DpadUp = clawPivot up
+    DpadDown = clawPivot down
+    RBumper = claw close
+    LBumper = claw open

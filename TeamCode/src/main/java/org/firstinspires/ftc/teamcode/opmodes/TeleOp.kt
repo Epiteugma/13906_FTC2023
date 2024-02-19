@@ -10,31 +10,6 @@ import kotlin.math.abs
 
 @TeleOp(name = "FTC 2023", group = "FTC23")
 class TeleOp : OpMode() {
-    @Config
-    class Multipliers {
-        var global = 1.0
-
-        val drive = 0.7
-        val turn = 0.65
-        val strafe = 1.0
-
-        val backRight = 1.0
-        val frontRight = 1.0
-        val backLeft = 1.2
-        val frontLeft = 1.2
-
-        var slideHold = 0.15
-        var slide = 1.0
-
-        val slideTilter = 1.0
-        var slideTilterHold = 0.2
-
-        val arm = 0.35
-        val armHold = 0.15
-
-        val clawPivotPower = 0.4
-    }
-
     class LastPositions {
         var arm = 0
         var leftSlide = 0
@@ -42,7 +17,6 @@ class TeleOp : OpMode() {
         var slideTilter = 0
     }
 
-    private val mlt = Multipliers()
     private val lastPositions = LastPositions()
 
     private var globalToggleLock = false
@@ -211,15 +185,27 @@ class TeleOp : OpMode() {
         if (abs(armPower) > this.mlt.armHold) {
             UTILS.unlockMotor(this.arm, armPower)
             this.lastPositions.arm = this.arm.currentPosition
-        } else UTILS.lockMotor(this.arm, this.mlt.armHold, this.lastPositions.arm)
+        } else UTILS.lockMotor(this.arm, this.mlt.armHold, this.lastPositions.arm, false)
     }
 
     private fun printTelemetry() {
         this.telemetry.addLine("DRIVETRAIN")
-        this.telemetry.addData("Front Left", "%.2f".format(this.drivetrain.front.left.power))
-        this.telemetry.addData("Front Right", "%.2f".format(this.drivetrain.front.right.power))
-        this.telemetry.addData("Back Left", "%.2f".format(this.drivetrain.back.left.power))
-        this.telemetry.addData("Back Right", "%.2f".format(this.drivetrain.back.right.power))
+        this.telemetry.addData(
+            "Front Left",
+            "%.2f | %d".format(this.drivetrain.front.left.power, this.drivetrain.front.left.currentPosition)
+        )
+        this.telemetry.addData(
+            "Front Right",
+            "%.2f | %d".format(this.drivetrain.front.right.power, this.drivetrain.front.right.currentPosition)
+        )
+        this.telemetry.addData(
+            "Back Left",
+            "%.2f | %d".format(this.drivetrain.back.left.power, this.drivetrain.back.left.currentPosition)
+        )
+        this.telemetry.addData(
+            "Back Right",
+            "%.2f | %d".format(this.drivetrain.back.right.power, this.drivetrain.back.right.currentPosition)
+        )
         this.telemetry.addLine()
 
         this.telemetry.addLine("SLIDE TILTER")

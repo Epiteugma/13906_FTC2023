@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.TouchSensor
+import org.firstinspires.ftc.teamcode.opmodes.TeleOp
 
 class MotorColl {
     lateinit var left: DcMotor
@@ -15,6 +16,13 @@ class MotorColl {
 class Drivetrain {
     val front = MotorColl()
     val back = MotorColl()
+
+    fun halt() {
+        this.front.left.power = 0.0
+        this.front.right.power = 0.0
+        this.back.left.power = 0.0
+        this.back.right.power = 0.0
+    }
 }
 
 class Slides {
@@ -33,8 +41,8 @@ class SlideTitler {
 }
 
 class Claw {
-    lateinit var left:Servo
-    lateinit var right:Servo
+    lateinit var left: Servo
+    lateinit var right: Servo
 
     fun close() {
         this.left.position = 0.45
@@ -47,21 +55,52 @@ class Claw {
     }
 }
 
+class Multipliers {
+    var global = 1.0
+
+    val drive = 0.7
+    val turn = 0.65
+    val strafe = 1.0
+
+    val backRight = 1.0
+    val frontRight = 1.0
+    val backLeft = 1.2
+    val frontLeft = 1.2
+
+    var slideHold = 0.15
+    var slide = 1.0
+
+    val slideTilter = 1.0
+    var slideTilterHold = 0.2
+
+    val arm = 0.35
+    val armHold = 0.15
+
+    val clawPivotPower = 0.4
+}
+
 abstract class OpMode : LinearOpMode() {
     val drivetrain = Drivetrain()
     val slides = Slides()
     var slideTilter = SlideTitler()
     var claw = Claw()
+    val mlt = Multipliers()
 
     lateinit var planeLauncher: Servo
 
     lateinit var arm: DcMotor
     lateinit var clawPivot: CRServo
 
+    private var stopRequested = false
+
+    fun requestStop() {
+        this.stopRequested = true
+    }
+
     override fun runOpMode() {
         this.setup()
         waitForStart()
-        while (opModeIsActive()) this.run()
+        while (opModeIsActive() && !stopRequested) this.run()
         this.cleanup()
     }
 

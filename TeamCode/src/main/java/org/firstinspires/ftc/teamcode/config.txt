@@ -2,7 +2,7 @@ Control Hub:
     Motors: {
         0: arm,
         1: backRight / slideTilter encoder,
-        2: frontRight,
+        2: frontRight / right parallel encoder,
         3: rightSlide,
     }
     Digital: {
@@ -14,8 +14,8 @@ Control Hub:
 Expansion Hub:
     Motors: {
         0: slideTilter,
-        1: frontLeft,
-        2: backLeft,
+        1: frontLeft / left parallel encoder,
+        2: backLeft / perpendicular encoder,
         3: leftSlide,
     }
     Digital: {

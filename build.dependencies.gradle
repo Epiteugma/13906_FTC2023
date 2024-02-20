@@ -2,6 +2,7 @@ repositories {
     mavenCentral()
     google() // Needed for androidx
 
+    maven { url = 'https://jitpack.io' }
     maven { url = 'https://maven.brott.dev/' }
 }
 
@@ -21,5 +22,8 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
 
     implementation 'com.acmerobotics.dashboard:dashboard:0.4.15'
+
+    implementation "com.github.amarcolini.joos:command:0.4.9"
+    annotationProcessor "com.github.amarcolini.joos:annotation:0.4.9"
 }
 

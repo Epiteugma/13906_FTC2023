@@ -1,7 +1,8 @@
-package org.firstinspires.ftc.teamcode.opmodes.test
+package org.firstinspires.ftc.teamcode.opmodes.tests
 
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.config.Config
+import com.amarcolini.joos.dashboard.JoosConfig
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.teamcode.OpMode
@@ -20,13 +21,10 @@ class ItemDetectionTest : OpMode() {
     val height: Int = 480
     val detector = ItemDetector()
 
-
-    companion object {
-        @JvmField
+    @JoosConfig
+    object Prop {
         var lowHSV = Scalar(0.0, 180.0, 160.0)
-        @JvmField
         var highHSV = Scalar(5.0, 230.0, 240.0)
-        @JvmField
         var threshold = 0.15
     }
 
@@ -34,7 +32,7 @@ class ItemDetectionTest : OpMode() {
         val webcamName:WebcamName = hardwareMap.get(WebcamName::class.java, "Webcam 1")
         val monitorViewIdParent = hardwareMap.appContext.resources.getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.packageName)
         val webcam: OpenCvWebcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, monitorViewIdParent)
-        detector.init(width, height, lowHSV, highHSV, threshold, telemetry)
+        detector.init(width, height, Prop.lowHSV, Prop.highHSV, Prop.threshold, telemetry)
         webcam.setPipeline(detector)
         webcam.openCameraDeviceAsync(object : OpenCvCamera.AsyncCameraOpenListener {
             override fun onOpened() {

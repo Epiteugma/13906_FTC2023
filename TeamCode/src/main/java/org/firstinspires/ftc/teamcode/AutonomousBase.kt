@@ -1,90 +1,84 @@
-package org.firstinspires.ftc.teamcode.opmodes.autonomous
+package org.firstinspires.ftc.teamcode
 
 import com.acmerobotics.dashboard.FtcDashboard
+import com.amarcolini.joos.dashboard.JoosConfig
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
-import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference
-import org.firstinspires.ftc.teamcode.OpMode
 import org.firstinspires.ftc.teamcode.lib.UTILS
 import org.firstinspires.ftc.teamcode.lib.math.cap
 import org.firstinspires.ftc.teamcode.lib.math.normalize
 import org.firstinspires.ftc.teamcode.lib.vision.detection.ItemDetector
-import org.opencv.core.Scalar
+import org.firstinspires.ftc.teamcode.lib.vision.detection.Prop
 import org.openftc.easyopencv.OpenCvCamera
 import org.openftc.easyopencv.OpenCvCameraFactory
 import org.openftc.easyopencv.OpenCvCameraRotation
-import org.openftc.easyopencv.OpenCvWebcam
 import kotlin.math.abs
 
-@Autonomous(name = "FTC23 Romania", group = "FTC23")
-class BasicAuton : OpMode() {
+enum class Side {
+    LEFT,
+    RIGHT
+}
+
+enum class Color {
+    RED,
+    BLUE
+}
+
+open class AutonomousBase(private val color:Color, private val side:Side) : OpMode() {
     private lateinit var imu: IMU
     private lateinit var detector: ItemDetector
-    private val timer = ElapsedTime()
+    private val matchTimer = ElapsedTime()
     private val recognizeTimeout = 5_000
     private val turnErrorThreshold:Double  = 5.0
     private val driveErrorThreshold:Double = 2.0
     private val width: Int = 640
     private val height: Int = 480
+    var position = ItemDetector.Location.NONE
+    private lateinit var webcam: OpenCvCamera
+    private val prop: Prop = Prop(color)
 
-    class RedProp {
-        val lowHSV = Scalar(0.0, 180.0, 160.0)
-        val highHSV = Scalar(5.0, 230.0, 240.0)
-        val threshold = 0.15
+    @JoosConfig
+    object TurnMlts {
+        val base = 0.5
+        val baseReached = 0.0
+        val mlt = 0.4
+        val mltReached = 0.4
     }
 
-    class BlueProp {
-        val lowHSV = Scalar(0.0, 180.0, 160.0)
-        val highHSV = Scalar(5.0, 230.0, 240.0)
-        val threshold = 0.15
+    @JoosConfig
+    object DriveMlts {
+        val base = 0.05
+        val baseReached = 0.03
+        val mlt = 2.5
+        val mltReached = 4.0
     }
 
-    override fun setup() {
-        super.setup()
+    private fun checkState(): Boolean {
+        UTILS.lockMotor(
+            this.slideTilter.motor,
+            this.mlt.slideTilterHold,
+            0,
+            true,
+            8192,
+            this.drivetrain.back.right
+        )
 
-        this.imu = this.hardwareMap.get(IMU::class.java, "imu")
+        UTILS.lockMotor(
+            this.arm,
+            this.mlt.armHold,
+            0
+        )
 
-        val imuParams = IMU.Parameters(RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
-        ))
-
-        this.imu.initialize(imuParams)
-        this.imu.resetYaw()
-
-        val prop = RedProp()
-
-        val webcamName: WebcamName = hardwareMap.get(WebcamName::class.java, "Webcam 1")
-        val monitorViewIdParent = hardwareMap.appContext.resources.getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.packageName)
-        val webcam: OpenCvWebcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, monitorViewIdParent)
-        detector.init(width, height,
-            prop.lowHSV,
-            prop.highHSV,
-            prop.threshold, telemetry)
-        webcam.setPipeline(detector)
-        webcam.openCameraDeviceAsync(object : OpenCvCamera.AsyncCameraOpenListener {
-            override fun onOpened() {
-                webcam.startStreaming(width, height, OpenCvCameraRotation.UPRIGHT)
-                FtcDashboard.getInstance().startCameraStream(webcam, 30.0)
-            }
-
-            override fun onError(errorCode: Int) {}
-        })
-
-        this.waitForStart()
-        timer.reset()
-
-        UTILS.resetEncoder(this.arm)
-        UTILS.resetEncoder(this.slideTilter.encoder)
+        return this.opModeIsActive()
     }
 
-    private fun turn(heading: Double, holdTime: Double = 2.0) {
+    fun turn(heading: Double, holdTime: Double = 2.0) {
         val start = imu.getRobotOrientation(
                 AxesReference.INTRINSIC,
                 AxesOrder.XYZ,
@@ -108,8 +102,8 @@ class BasicAuton : OpMode() {
                     AngleUnit.DEGREES
             ).thirdAngle)
 
-            val base = if(reachedTarget) 0.0 else 0.5
-            val mlt = 0.4
+            val base = if(reachedTarget) TurnMlts.baseReached else TurnMlts.base
+            val mlt = if(reachedTarget) TurnMlts.mltReached else TurnMlts.mlt
 
             val div = 360.0 * mlt
             val add =
@@ -132,7 +126,7 @@ class BasicAuton : OpMode() {
         this.drivetrain.halt()
     }
 
-    private fun driveForward(distance: Double, holdTime: Double = 3.0) {
+    fun driveForward(distance: Double, holdTime: Double = 3.0) {
         UTILS.resetEncoder(this.odometryEncoders.left)
         UTILS.resetEncoder(this.odometryEncoders.right)
 
@@ -156,8 +150,8 @@ class BasicAuton : OpMode() {
             val errL = ticksToRun - this.odometryEncoders.left.currentPosition
             val errR = ticksToRun - this.odometryEncoders.right.currentPosition
 
-            val base = if(reachedTarget) 0.03 else 0.05
-            val mlt = if(reachedTarget) 4.0 else 2.5
+            val base = if(reachedTarget) DriveMlts.baseReached else DriveMlts.base
+            val mlt = if(reachedTarget) DriveMlts.mltReached else DriveMlts.mlt
 
             val div = mlt * this.odometryEncoders.ticksPerRev
             val addL =
@@ -188,53 +182,59 @@ class BasicAuton : OpMode() {
         this.drivetrain.halt()
     }
 
+    override fun setup() {
+        super.setup()
+
+        this.imu = this.hardwareMap.get(IMU::class.java, "imu")
+
+        val imuParams = IMU.Parameters(RevHubOrientationOnRobot(
+            RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+            RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+        ))
+
+        this.imu.initialize(imuParams)
+        this.imu.resetYaw()
+
+        val webcamName: WebcamName = hardwareMap.get(WebcamName::class.java, "Webcam 1")
+        val monitorViewIdParent = hardwareMap.appContext.resources.getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.packageName)
+        webcam =  OpenCvCameraFactory.getInstance().createWebcam(webcamName, monitorViewIdParent)
+
+        this.waitForStart()
+        matchTimer.reset()
+
+        UTILS.resetEncoder(this.arm)
+        UTILS.resetEncoder(this.slideTilter.encoder)
+    }
+
     override fun run() {
-        var position = ItemDetector.Location.NONE
+        detector.init(width, height,
+            prop.lowHSV,
+            prop.highHSV,
+            prop.threshold, telemetry)
+        webcam.setPipeline(detector)
+        webcam.openCameraDeviceAsync(object : OpenCvCamera.AsyncCameraOpenListener {
+            override fun onOpened() {
+                webcam.startStreaming(width, height, OpenCvCameraRotation.UPRIGHT)
+                FtcDashboard.getInstance().startCameraStream(webcam, 30.0)
+            }
+
+            override fun onError(errorCode: Int) {}
+        })
 
         while (this.checkState() &&
                 position == ItemDetector.Location.NONE &&
-                timer.milliseconds() < this.recognizeTimeout
+                matchTimer.milliseconds() < this.recognizeTimeout
         ) {
             telemetry.addLine("Recognition in progress...")
             telemetry.addData(
                     "Time remaining",
-                    "%.2f".format((this.recognizeTimeout - timer.milliseconds()) / 1_000.0)
+                    "%.2f".format((this.recognizeTimeout - matchTimer.milliseconds()) / 1_000.0)
             )
             telemetry.update()
 
             position = detector.location
         }
 
-        val targetAngle = when (position) {
-            ItemDetector.Location.NONE, ItemDetector.Location.CENTER -> 0.0
 
-            ItemDetector.Location.LEFT -> -30.0
-
-            ItemDetector.Location.RIGHT -> 30.0
-        }
-
-        this.driveForward(30.0)
-        this.turn(targetAngle)
-        this.driveForward(60.0)
-        this.requestStop()
-    }
-
-    private fun checkState(): Boolean {
-        UTILS.lockMotor(
-            this.slideTilter.motor,
-            this.mlt.slideTilterHold,
-            0,
-            true,
-            8192,
-            this.drivetrain.back.right
-        )
-
-        UTILS.lockMotor(
-            this.arm,
-            this.mlt.armHold,
-            0
-        )
-
-        return this.opModeIsActive()
     }
 }

@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop
 
-import com.acmerobotics.dashboard.config.Config
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import org.firstinspires.ftc.teamcode.OpMode
@@ -11,8 +10,6 @@ import kotlin.math.abs
 @TeleOp(name = "FTC 2023", group = "FTC23")
 class TeleOp : OpMode() {
 
-    private var globalToggleLock = false
-    
     override fun setup() {
         super.setup()
 
@@ -37,7 +34,7 @@ class TeleOp : OpMode() {
     }
 
     private fun runT() {
-        this.toggleGlobalPower()
+        this.toggleDrive1Factor()
 
         this.moveSlides()
         this.moveClaw()
@@ -78,19 +75,16 @@ class TeleOp : OpMode() {
         UTILS.lockMotor(this.arm, this.mlt.armHold, this.lastPositions.arm)
     }
 
-    private fun toggleGlobalPower() {
-        if (gamepad1.cross && !this.globalToggleLock)
-            this.mlt.global =
-                if (this.mlt.global == 1.0) 0.5
-                else 1.0
-        this.globalToggleLock = gamepad1.cross
+    private fun toggleDrive1Factor() {
+        if (gamepad1.dpad_up) this.mlt.driver1Factor = 1.0
+        else if (gamepad1.dpad_down) this.mlt.driver1Factor = 0.75
     }
 
     private fun moveRobot() {
         // CALCULATE DRIVE POWERS
-        val drivePower = -this.gamepad1.left_stick_y * this.mlt.drive * this.mlt.global
-        val turnPower = this.gamepad1.right_stick_x* this.mlt.turn * this.mlt.global
-        val strafePower = this.gamepad1.left_stick_x * this.mlt.strafe * this.mlt.global
+        val drivePower = -this.gamepad1.left_stick_y * this.mlt.drive * this.mlt.driver1Factor
+        val turnPower = this.gamepad1.right_stick_x* this.mlt.turn * this.mlt.driver1Factor
+        val strafePower = this.gamepad1.left_stick_x * this.mlt.strafe * this.mlt.driver1Factor
 
         // DRIVETRAIN
         this.drivetrain.front.left.power =
@@ -104,8 +98,7 @@ class TeleOp : OpMode() {
     }
 
     private fun moveSlides() {
-        val slidePower = -this.gamepad2.left_stick_y * this.mlt.slide * this.mlt.global
-
+        val slidePower = -this.gamepad2.left_stick_y * this.mlt.slide
         var left = slidePower
         var right = slidePower
 
@@ -135,7 +128,7 @@ class TeleOp : OpMode() {
         var slideTilterPower =
             (this.gamepad1.right_trigger - this.gamepad1.left_trigger) *
                     this.mlt.slideTilter *
-                    this.mlt.global
+                    this.mlt.driver1Factor
 
         // TILTER LIMIT SWITCHES
         if (slideTilterPower > 0 && slideTilter.limits[1]!!.isPressed) slideTilterPower = 0.0
@@ -172,7 +165,7 @@ class TeleOp : OpMode() {
     }
 
     private fun moveArm() {
-        val armPower = -this.gamepad2.right_stick_y * this.mlt.arm * this.mlt.global
+        val armPower = -this.gamepad2.right_stick_y * this.mlt.arm
 
         if (abs(armPower) > this.mlt.armHold) {
             UTILS.unlockMotor(this.arm, armPower)

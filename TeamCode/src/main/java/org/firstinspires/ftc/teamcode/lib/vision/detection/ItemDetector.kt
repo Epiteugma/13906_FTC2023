@@ -11,19 +11,13 @@ import org.openftc.easyopencv.OpenCvPipeline
 import java.util.Arrays
 
 class ItemDetector(private val width: Int, private val height: Int, private val lowHSV: Scalar, private val highHSV: Scalar, private val telemetry: Telemetry) : OpenCvPipeline() {
-    private var location = Location.NONE
+    var location = Location.NONE
     private var mat: Mat = Mat()
-    private val blueLowHSV = Scalar(80.0, 200.0, 240.0) // (0-180, 0-255, 0-255)
-    private val blueHighHSV = Scalar(180.0, 255.0, 255.0) // (0-180, 0-255, 0-255)
-    private val bothLowHSV = Scalar(80.0, 100.0, 200.0) // (0-180, 0-255, 0-255)
-    private val bothHighHSV = Scalar(180.0, 255.0, 255.0) // (0-180, 0-255, 0-255)
-    private val redLowHSV = Scalar(165.0, 0.0, 200.0) // (0-180, 0-255, 0-255)
-    private val redHighHSV = Scalar(180.0, 255.0, 255.0) // (0-180, 0-255, 0-255)
     private val margin = 3.0
 
     // top left corner is (0, 0)
     // Left is slightly lower as it is closer
-    private val LEFT_ROI = Rect(
+    private val RIGHT_ROI = Rect(
         Point(0.0 + margin, height * 0.4),
         Point(width / 3.0 - margin, height * 0.8)
     )
@@ -33,16 +27,16 @@ class ItemDetector(private val width: Int, private val height: Int, private val 
         Point(width / 3.0, height * 0.25),
         Point(width * 2.0 / 3.0, height * 0.6)
     )
-    private val RIGHT_ROI = Rect(
+    private val LEFT_ROI = Rect(
         Point(width * 2.0 / 3.0 + margin, height * 0.25),
         Point(width - margin, height * 0.75)
     )
 
     enum class Location(val value: Double) {
         NONE(0.0),
-        LEFT(0.2),
+        LEFT(0.15),
         CENTER(0.1),
-        RIGHT(0.2)
+        RIGHT(0.15)
 
     }
 

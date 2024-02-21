@@ -16,7 +16,7 @@ class LastPositions {
 }
 
 class Multipliers {
-    var global = 1.0
+    var driver1Factor = 1.0
 
     val drive = 0.55
     val turn = 0.65

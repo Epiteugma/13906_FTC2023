@@ -11,17 +11,22 @@ class RedLeft: AutonomousBase(Color.RED, Side.LEFT) {
     override fun run() {
         super.run()
 
-        val targetAngle = when (position) {
-            ItemDetector.Location.NONE, ItemDetector.Location.CENTER -> 0.0
+        when (position) {
+            ItemDetector.Location.NONE, ItemDetector.Location.CENTER -> {
+                this.driveForward(70.0)
+            }
 
-            ItemDetector.Location.LEFT -> -30.0
+            ItemDetector.Location.LEFT -> {
+                this.turn(-30.0)
+                this.driveForward(30.0)
+            }
 
-            ItemDetector.Location.RIGHT -> 30.0
+            ItemDetector.Location.RIGHT -> {
+                this.turn(30.0)
+                this.driveForward(30.0)
+            }
         }
 
-        this.driveForward(30.0)
-        this.turn(targetAngle)
-        this.driveForward(60.0)
         this.requestStop()
     }
 

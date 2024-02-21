@@ -14,26 +14,24 @@ import org.openftc.easyopencv.OpenCvCameraRotation
 import org.openftc.easyopencv.OpenCvWebcam
 
 
-@Config
 @Autonomous(name = "Item Detection Test", group = "FTC23_TEST_VISION")
 class ItemDetectionTest : OpMode() {
-    val width: Int = 640
-    val height: Int = 480
-    val detector = ItemDetector()
+    val width: Int = 1920
+    val height: Int = 1080
 
     @JoosConfig
     object Prop {
         var lowHSV = Scalar(0.0, 180.0, 160.0)
         var highHSV = Scalar(5.0, 230.0, 240.0)
-        var threshold = 0.15
     }
+
+    val detector = ItemDetector(width, height, Prop.lowHSV, Prop.highHSV, telemetry)
 
     override fun setup() {
         val webcamName:WebcamName = hardwareMap.get(WebcamName::class.java, "Webcam 1")
         val monitorViewIdParent = hardwareMap.appContext.resources.getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.packageName)
         val webcam: OpenCvWebcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, monitorViewIdParent)
-        detector.init(width, height, Prop.lowHSV, Prop.highHSV, Prop.threshold, telemetry)
-        webcam.setPipeline(detector)
+//        webcam.setPipeline(detector)
         webcam.openCameraDeviceAsync(object : OpenCvCamera.AsyncCameraOpenListener {
             override fun onOpened() {
                 webcam.startStreaming(width, height, OpenCvCameraRotation.UPRIGHT)

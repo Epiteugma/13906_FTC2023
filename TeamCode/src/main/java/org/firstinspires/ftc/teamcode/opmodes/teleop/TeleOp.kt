@@ -10,14 +10,6 @@ import kotlin.math.abs
 
 @TeleOp(name = "FTC 2023", group = "FTC23")
 class TeleOp : OpMode() {
-    class LastPositions {
-        var arm = 0
-        var leftSlide = 0
-        var rightSlide = 0
-        var slideTilter = 0
-    }
-
-    private val lastPositions = LastPositions()
 
     private var globalToggleLock = false
     
@@ -186,64 +178,5 @@ class TeleOp : OpMode() {
             UTILS.unlockMotor(this.arm, armPower)
             this.lastPositions.arm = this.arm.currentPosition
         } else UTILS.lockMotor(this.arm, this.mlt.armHold, this.lastPositions.arm, false)
-    }
-
-    private fun printTelemetry() {
-        this.telemetry.addLine("DRIVETRAIN")
-        this.telemetry.addData(
-            "Front Left",
-            "%.2f | %d".format(this.drivetrain.front.left.power, this.drivetrain.front.left.currentPosition)
-        )
-        this.telemetry.addData(
-            "Front Right",
-            "%.2f | %d".format(this.drivetrain.front.right.power, this.drivetrain.front.right.currentPosition)
-        )
-        this.telemetry.addData(
-            "Back Left",
-            "%.2f | %d".format(this.drivetrain.back.left.power, this.drivetrain.back.left.currentPosition)
-        )
-        this.telemetry.addData(
-            "Back Right",
-            "%.2f | %d".format(this.drivetrain.back.right.power, this.drivetrain.back.right.currentPosition)
-        )
-        this.telemetry.addLine()
-
-        this.telemetry.addLine("SLIDE TILTER")
-        this.telemetry.addData("Last Position", this.lastPositions.slideTilter)
-        this.telemetry.addData("Current Position", this.drivetrain.back.right.currentPosition)
-        this.telemetry.addData("Power", "%.2f".format(this.slideTilter.motor.power))
-        this.telemetry.addData("Limit Back", this.slideTilter.limits[0]!!.isPressed)
-        this.telemetry.addData("Limit Front", this.slideTilter.limits[1]!!.isPressed)
-        this.telemetry.addLine()
-
-        this.telemetry.addLine("SLIDES")
-
-        this.telemetry.addLine("LEFT")
-        this.telemetry.addData("Last Position", this.lastPositions.leftSlide)
-        this.telemetry.addData("Current Position", this.slides.left.motor.currentPosition)
-        this.telemetry.addData("Power", "%.2f".format(this.slides.left.motor.power))
-        this.telemetry.addData("Limit Down", this.slides.left.limits[0]!!.isPressed)
-        this.telemetry.addData("Limit Up", this.slides.left.limits[1]!!.isPressed)
-
-        this.telemetry.addLine("RIGHT")
-        this.telemetry.addData("Last Position", this.lastPositions.rightSlide)
-        this.telemetry.addData("Current Position", this.slides.right.motor.currentPosition)
-        this.telemetry.addData("Power", "%.2f".format(this.slides.right.motor.power))
-        this.telemetry.addData("Limit Down", this.slides.right.limits[0]!!.isPressed)
-        this.telemetry.addData("Limit Up", this.slides.right.limits[1]!!.isPressed)
-        this.telemetry.addLine()
-
-        this.telemetry.addLine("ARM")
-        this.telemetry.addData("Last Position", this.lastPositions.arm)
-        this.telemetry.addData("Current Position", this.arm.currentPosition)
-        this.telemetry.addData("Power", "%.2f".format(this.arm.power))
-        this.telemetry.addLine()
-
-        this.telemetry.addLine("CLAW")
-        this.telemetry.addData("Claw Pivot Power", this.clawPivot.power)
-        this.telemetry.addData("Left Position", this.claw.left.position)
-        this.telemetry.addData("Right Position", this.claw.right.position)
-
-        this.telemetry.update()
     }
 }

@@ -28,8 +28,8 @@ class Types {
         lateinit var center: DcMotor
 
         val ticksPerRev = 8192
-        val wheelDiameter = 6.0 / 2.0
-        val wheelCircumference = this.wheelDiameter * Math.PI
+        val wheelRadius = 6.0 / 2.0
+        val wheelCircumference = 2 * this.wheelRadius * Math.PI
     }
 
     class Slides {

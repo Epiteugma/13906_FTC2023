@@ -6,20 +6,28 @@ Control Hub:
         3: rightSlide,
     }
     Digital: {
-        2: magneticLimDownRight,
-        4: magneticLimUpRight,
+        2: limDownRight,
+        4: limUpRight,
     }
-    Servos: {}
+    Servos: {
+        0: planeLauncher
+    }
 
 Expansion Hub:
     Motors: {
-        0: slideTilter,
+        0: slideTilter / perpendicular encoder,
         1: frontLeft / left parallel encoder,
-        2: backLeft / perpendicular encoder,
+        2: backLeft,
         3: leftSlide,
     }
     Digital: {
-        0: magneticLimDownLeft,
-        2: magneticLimUpLeft,
+        0: limDownLeft,
+        2: limUpLeft,
+        4: limFront,
+        6: limBack,
     }
-    Servos: {}
+    Servos: {
+        0: clawPivot
+        1: rightClaw,
+        2: leftClaw
+    }

@@ -32,11 +32,9 @@ enum class Color {
 
 open class AutonomousBase(private val color:Color, private val side:Side) : OpMode() {
     private lateinit var imu: IMU
-    private lateinit var detector: ItemDetector
+//    private lateinit var detector: ItemDetector
     private val matchTimer = ElapsedTime()
     private val recognizeTimeout = 5_000
-    private val turnErrorThreshold:Double  = 5.0
-    private val driveErrorThreshold:Double = 2.0
     private val width: Int = 640
     private val height: Int = 480
     var position = ItemDetector.Location.NONE
@@ -46,39 +44,59 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
     @JoosConfig
     object TurnMlts {
         val base = 0.5
-        val baseReached = 0.0
+        val baseReached = 0.09
         val mlt = 0.4
-        val mltReached = 0.4
+        val mltReached = 0.2
     }
 
     @JoosConfig
     object DriveMlts {
-        val base = 0.05
+        val base = 0.2
         val baseReached = 0.03
         val mlt = 2.5
         val mltReached = 4.0
     }
 
-    private fun checkState(): Boolean {
+    fun checkState(): Boolean {
         UTILS.lockMotor(
             this.slideTilter.motor,
             this.mlt.slideTilterHold,
             0,
             true,
             8192,
-            this.drivetrain.back.right
+            this.slideTilter.encoder
         )
 
         UTILS.lockMotor(
             this.arm,
             this.mlt.armHold,
-            0
+            this.lastPositions.arm
         )
+        this.printTelemetry()
 
         return this.opModeIsActive()
     }
 
-    fun turn(heading: Double, holdTime: Double = 2.0) {
+    fun ensureState(threshold: Int = 20) {
+        var armDiff = abs(this.arm.currentPosition - this.lastPositions.arm)
+        var slideTilterDiff = abs(this.slideTilter.encoder.currentPosition - this.lastPositions
+            .slideTilter)
+        // by running checkState continually you also ensure the state
+        while((armDiff > threshold || slideTilterDiff > threshold) && this.checkState()) {
+            telemetry.addData("armDiff: ", armDiff)
+            telemetry.addData("slideTilterDiff: ", slideTilterDiff)
+            armDiff = abs(this.arm.currentPosition - this.lastPositions.arm)
+            slideTilterDiff = abs(this.slideTilter.encoder.currentPosition - this.lastPositions
+                .slideTilter)
+        }
+    }
+
+    fun turn(
+        heading: Double,
+        oneSide: Boolean = false,
+        threshold: Double = 3.0,
+        holdTime: Double = 2.0
+    ) {
         val start = imu.getRobotOrientation(
                 AxesReference.INTRINSIC,
                 AxesOrder.XYZ,
@@ -93,7 +111,7 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
             this.checkState() &&
             (!reachedTarget || holdTimer.milliseconds() < holdTime * 1000)
         ) {
-            reachedTarget = reachedTarget || abs(error) < turnErrorThreshold
+            reachedTarget = reachedTarget || abs(error) < threshold
             if (!reachedTarget) holdTimer.reset()
 
             error = normalize(heading - imu.getRobotOrientation(
@@ -110,10 +128,16 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
                 if (error < 0) -base
                 else base
 
-            this.drivetrain.front.left.power = cap(-error / div - add, -1.0, 1.0)
-            this.drivetrain.front.right.power = cap(error / div + add, -1.0, 1.0)
-            this.drivetrain.back.left.power = cap(-error / div - add, -1.0, 1.0)
-            this.drivetrain.back.right.power = cap(error / div + add, -1.0, 1.0)
+            var leftP = cap(-error / div - add, -1.0, 1.0)
+            var rightP = cap(error / div + add, -1.0, 1.0)
+
+            if (oneSide && leftP < 0) leftP = 0.0
+            if (oneSide && rightP < 0) rightP = 0.0
+
+            this.drivetrain.front.left.power = leftP
+            this.drivetrain.front.right.power = rightP
+            this.drivetrain.back.left.power = leftP
+            this.drivetrain.back.right.power = rightP
 
             this.telemetry.addLine("Turning...")
             this.telemetry.addData("Target", heading)
@@ -122,17 +146,17 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
             telemetry.addData("Power", error / div + add);
             this.telemetry.update()
         }
-        
+
         this.drivetrain.halt()
     }
 
-    fun driveForward(distance: Double, holdTime: Double = 3.0) {
+    fun driveForward(distance: Double, threshold: Int = 5, holdTime: Double = 5.0) {
         UTILS.resetEncoder(this.odometryEncoders.left)
         UTILS.resetEncoder(this.odometryEncoders.right)
 
         val ticksToRun = distance / this.odometryEncoders.wheelCircumference * this
             .odometryEncoders.ticksPerRev
-        val errorThreshold = this.driveErrorThreshold / this.odometryEncoders.wheelCircumference * this
+        val errorThreshold = threshold / this.odometryEncoders.wheelCircumference * this
             .odometryEncoders.ticksPerRev
         var reachedTarget = false
         val holdTimer = ElapsedTime()
@@ -185,6 +209,7 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
     override fun setup() {
         super.setup()
 
+        this.claw.close()
         this.imu = this.hardwareMap.get(IMU::class.java, "imu")
 
         val imuParams = IMU.Parameters(RevHubOrientationOnRobot(
@@ -207,19 +232,19 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
     }
 
     override fun run() {
-        detector.init(width, height,
-            prop.lowHSV,
-            prop.highHSV,
-            prop.threshold, telemetry)
-        webcam.setPipeline(detector)
-        webcam.openCameraDeviceAsync(object : OpenCvCamera.AsyncCameraOpenListener {
-            override fun onOpened() {
-                webcam.startStreaming(width, height, OpenCvCameraRotation.UPRIGHT)
-                FtcDashboard.getInstance().startCameraStream(webcam, 30.0)
-            }
-
-            override fun onError(errorCode: Int) {}
-        })
+//        detector.init(width, height,
+//            prop.lowHSV,
+//            prop.highHSV,
+//            prop.threshold, telemetry)
+//        webcam.setPipeline(detector)
+//        webcam.openCameraDeviceAsync(object : OpenCvCamera.AsyncCameraOpenListener {
+//            override fun onOpened() {
+//                webcam.startStreaming(width, height, OpenCvCameraRotation.UPRIGHT)
+//                FtcDashboard.getInstance().startCameraStream(webcam, 30.0)
+//            }
+//
+//            override fun onError(errorCode: Int) {}
+//        })
 
         while (this.checkState() &&
                 position == ItemDetector.Location.NONE &&
@@ -232,7 +257,13 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
             )
             telemetry.update()
 
-            position = detector.location
+            val random = Math.random()
+            position =
+                if (random < 1/3.0) ItemDetector.Location.LEFT
+                else if (random < 1/3.0 * 2) ItemDetector.Location.RIGHT
+                else ItemDetector.Location.CENTER
+
+//            position = detector.location
         }
 
 

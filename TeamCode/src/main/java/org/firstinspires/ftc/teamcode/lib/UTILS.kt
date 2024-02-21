@@ -21,6 +21,14 @@ object UTILS {
         motor.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
     }
 
+    fun moveToPosition(motor: DcMotor, targetPosition: Int, power: Double, errorThreshold: Int = 10) {
+
+        while (abs(motor.currentPosition - targetPosition) > errorThreshold) {
+            // wait for motor to reach position
+            this.lockMotor(motor, power, targetPosition)
+        }
+    }
+
 //    fun lockMotor(motor: DcMotor, holdPower: Double): Int {
 //        if (motor.mode == DcMotor.RunMode.RUN_TO_POSITION)
 //            return motor.currentPosition

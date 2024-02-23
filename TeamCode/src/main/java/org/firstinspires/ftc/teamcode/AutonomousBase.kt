@@ -239,7 +239,7 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
         }
 
         this.turn(90.0 * turnMlt)
-        this.driveForward(70.0)
+        this.driveForward(75.0)
     }
 
     override fun setup() {

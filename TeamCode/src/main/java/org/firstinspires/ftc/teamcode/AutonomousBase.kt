@@ -229,18 +229,17 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
         when (side) {
             ItemDetector.Location.NONE, ItemDetector.Location.CENTER -> {
                 this.driveForward(-60.0)
-                this.turn(90.0)
-                this.driveForward(70.0)
             }
 
             ItemDetector.Location.LEFT, ItemDetector.Location.RIGHT -> {
                 this.driveForward(-20.0)
                 this.turn(0.0)
                 this.driveForward(-30.0)
-                this.turn(90.0 * turnMlt)
-                this.driveForward(70.0)
             }
         }
+
+        this.turn(90.0 * turnMlt)
+        this.driveForward(70.0)
     }
 
     override fun setup() {

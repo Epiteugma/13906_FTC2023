@@ -207,7 +207,26 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
         this.drivetrain.halt()
     }
 
-    fun  placePixel(side: ItemDetector.Location) {
+    val actionTime = 20000
+    fun clawWaitOpen() {
+        var start = System.currentTimeMillis()
+        while(start + actionTime > System.currentTimeMillis() && this.checkState()){
+            this.telemetry.addLine("Claw opening...")
+            this.claw.open()
+            this.ensureState()
+        }
+    }
+
+    fun clawWaitClose() {
+        var start = System.currentTimeMillis()
+        while(start + actionTime > System.currentTimeMillis() && this.checkState()) {
+            this.telemetry.addLine("Claw closing...")
+            this.claw.close()
+            this.ensureState()
+        }
+    }
+
+    fun  placePixelProp(side: ItemDetector.Location) {
         when (side) {
             ItemDetector.Location.NONE, ItemDetector.Location.CENTER -> {
                 this.driveForward(71.0)
@@ -225,8 +244,32 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
         }
     }
 
-    fun park(side: ItemDetector.Location, turnMlt: Int = 1) {
-        when (side) {
+    fun driveToBackdrop(position: ItemDetector.Location) {
+        when (position) {
+            ItemDetector.Location.NONE, ItemDetector.Location.CENTER -> {
+                this.driveForward(-31.0)
+            }
+
+            ItemDetector.Location.LEFT -> {
+                this.driveForward(-26.0)
+            }
+
+            ItemDetector.Location.RIGHT -> {
+                this.driveForward(-26.0)
+            }
+        }
+        this.turn(-45.0)
+        this.driveForward(25.0)
+    }
+
+    fun scoreOnBackdrop() {
+        this.lastPositions.arm = -350
+        this.ensureState()
+        this.clawWaitOpen()
+    }
+
+    fun park(location: ItemDetector.Location, turnMlt: Int = 1) {
+        when (location) {
             ItemDetector.Location.NONE, ItemDetector.Location.CENTER -> {
                 this.driveForward(-60.0)
             }
@@ -290,7 +333,7 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
                     "Time remaining",
                     "%.2f".format((this.recognizeTimeout - matchTimer.milliseconds()) / 1_000.0)
             )
-            telemetry.update()
+            this.printTelemetry()
 
             position = detector.location
         }

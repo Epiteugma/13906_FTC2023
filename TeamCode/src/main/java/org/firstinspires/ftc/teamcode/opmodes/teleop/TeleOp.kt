@@ -159,9 +159,9 @@ class TeleOp : OpMode() {
             this.claw.open()
 
         // CLAW PIVOT
-        if (this.gamepad2.dpad_up) this.clawPivot.power = this.mlt.clawPivotPower
-        else if (this.gamepad2.dpad_down) this.clawPivot.power = -this.mlt.clawPivotPower
-        else this.clawPivot.power = 0.0
+        if (this.gamepad2.dpad_up) this.claw.pivot.power = this.mlt.clawPivotPower
+        else if (this.gamepad2.dpad_down) this.claw.pivot.power = -this.mlt.clawPivotPower
+        else this.claw.pivot.power = 0.0
     }
 
     private fun moveArm() {

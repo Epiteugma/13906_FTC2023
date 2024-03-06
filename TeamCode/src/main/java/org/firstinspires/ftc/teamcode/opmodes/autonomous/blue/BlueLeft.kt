@@ -12,8 +12,9 @@ class BlueLeft: AutonomousBase(Color.BLUE, Side.LEFT) {
 
         this.lastPositions.arm = 200
 
-        this.placePixel(position)
-        this.park(position)
+        this.placePixelProp(position)
+        this.driveToBackdrop(position)
+//        this.park(position)
 
         this.lastPositions.arm = -500
         this.ensureState()

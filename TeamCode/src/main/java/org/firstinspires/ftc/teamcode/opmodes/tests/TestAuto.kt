@@ -1,17 +1,16 @@
-package org.firstinspires.ftc.teamcode.opmodes.autonomous.blue
+package org.firstinspires.ftc.teamcode.opmodes.tests
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import org.firstinspires.ftc.teamcode.AutonomousBase
 import org.firstinspires.ftc.teamcode.Color
 import org.firstinspires.ftc.teamcode.Side
 
-@Autonomous(name = "BLUE RIGHT NO PARK", group = "FTC23")
-class BlueRight: AutonomousBase(Color.BLUE, Side.RIGHT) {
+@Autonomous(name = "TEST AUTONOMOUS", group = "FTC23")
+class TestAuto: AutonomousBase(Color.BLUE, Side.RIGHT) {
     override fun run() {
         super.run()
 
-        this.lastPositions.arm = 200
-        this.placePixelProp(position)
+        this.scoreOnBackdrop()
 
         this.requestStop()
     }

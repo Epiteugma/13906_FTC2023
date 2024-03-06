@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.lib
 
-import com.qualcomm.robotcore.hardware.CRServo
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import com.qualcomm.robotcore.hardware.TouchSensor
@@ -53,36 +52,18 @@ class Types {
         val slideTilterTicksPerRev = this.ticksPerRev * this.gearRatio
     }
 
-    class clawJoint(openPosition: Double, closePosition: Double) {
-        lateinit var servo: Servo
-        val openPosition = openPosition
-        val closePosition = closePosition
-
-        fun open() {
-            this.servo.position = this.openPosition
-        }
+    class Claw {
+        lateinit var left: Servo
+        lateinit var right: Servo
 
         fun close() {
-            this.servo.position = this.closePosition
-        }
-    }
-
-    class Claw(left: clawJoint, right: clawJoint) {
-        val left = left
-        val right = right
-
-        lateinit var pivot: CRServo
-
-        fun close() {
-            this.left.close()
-            this.right.close()
+            this.left.position = 0.45
+            this.right.position = 0.25
         }
 
         fun open() {
-            this.left.open()
-            this.right.open()
+            this.left.position = 0.1
+            this.right.position = 0.7
         }
-
-
     }
 }

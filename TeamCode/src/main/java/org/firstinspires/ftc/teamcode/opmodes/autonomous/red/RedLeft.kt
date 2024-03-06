@@ -11,7 +11,7 @@ class RedLeft: AutonomousBase(Color.RED, Side.LEFT) {
         super.run()
 
         this.lastPositions.arm = 200
-        this.placePixelProp(position)
+        this.placePixel(position)
 
         this.requestStop()
     }

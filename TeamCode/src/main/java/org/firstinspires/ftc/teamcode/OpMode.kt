@@ -44,9 +44,7 @@ abstract class OpMode : LinearOpMode() {
     val odometryEncoders = Types.OdometryEncoders()
     val slides = Types.Slides()
     var slideTilter = Types.SlideTitler()
-    private var leftJoint = Types.clawJoint(0.1, 0.45)
-    private var rightJoint = Types.clawJoint(0.7, 0.25)
-    var claw = Types.Claw(leftJoint, rightJoint)
+    var claw = Types.Claw()
     val mlt = Multipliers()
     val lastPositions = LastPositions()
 
@@ -98,11 +96,10 @@ abstract class OpMode : LinearOpMode() {
 
         this.arm = this.hardwareMap.get(DcMotor::class.java, "arm")
 
-        this.claw.pivot = this.hardwareMap.get(CRServo::class.java, "clawPivot")
+        this.clawPivot = this.hardwareMap.get(CRServo::class.java, "clawPivot")
 
-
-        this.leftJoint.servo = this.hardwareMap.get(Servo::class.java, "leftClaw")
-        this.rightJoint.servo = this.hardwareMap.get(Servo::class.java, "rightClaw")
+        this.claw.right = this.hardwareMap.get(Servo::class.java, "rightClaw")
+        this.claw.left = this.hardwareMap.get(Servo::class.java, "leftClaw")
 
         this.claw.close()
 
@@ -166,12 +163,9 @@ abstract class OpMode : LinearOpMode() {
         this.telemetry.addLine()
 
         this.telemetry.addLine("CLAW")
-        this.telemetry.addData("Claw Pivot Power", this.claw.pivot.power)
-        this.telemetry.addData("Left Position", this.claw.left.servo.position)
-        this.telemetry.addData("Right Position", this.claw.right.servo.position)
-
-        this.telemetry.addLine()
-        this.telemetry.addLine()
+        this.telemetry.addData("Claw Pivot Power", this.clawPivot.power)
+        this.telemetry.addData("Left Position", this.claw.left.position)
+        this.telemetry.addData("Right Position", this.claw.right.position)
 
         this.telemetry.update()
     }

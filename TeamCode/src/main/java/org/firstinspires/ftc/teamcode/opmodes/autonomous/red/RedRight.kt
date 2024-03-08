@@ -10,15 +10,6 @@ class RedRight: AutonomousBase(Color.RED, Side.RIGHT) {
     override fun run() {
         super.run()
 
-        this.lastPositions.arm = 200
-
-        this.placePixel(position)
-        this.park(position, -1)
-
-        this.lastPositions.arm = -500
-        this.ensureState()
-        this.claw.open()
-
         this.requestStop()
     }
 

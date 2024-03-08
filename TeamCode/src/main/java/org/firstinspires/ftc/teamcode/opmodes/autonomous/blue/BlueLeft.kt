@@ -10,16 +10,7 @@ class BlueLeft: AutonomousBase(Color.BLUE, Side.LEFT) {
     override fun run() {
         super.run()
 
-//        this.lastPositions.arm = 200
-//
-//        this.placePixel(position)
-//        this.park(position)
-//
-//        this.lastPositions.arm = -500
-//        this.ensureState()
-//        this.claw.open()
-//
-//        this.requestStop()
+        this.requestStop()
     }
 
 }

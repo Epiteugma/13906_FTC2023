@@ -39,23 +39,14 @@ class TeleOp : OpMode() {
         this.moveSlides()
         this.moveClaw()
         this.moveArm()
+        this.launcher()
+    }
 
+    private fun launcher() {
         // PLANE LAUNCHER
-        if (this.gamepad1.touchpad)
+        if (this.gamepad1.touchpad) {
             this.planeLauncher.position = 0.5
-
-//        if(this.gamepad2.triangle){
-//            if (buttonStates2.triangle){
-//                mlt.slide = 0.5
-//                mlt.slideHold = 0.3
-//                buttonStates2.triangle = true
-//            }
-//            else {
-//                mlt.slide = 0.8
-//                mlt.slideHold = 0.2
-//                buttonStates2.triangle = false
-//            }
-//        }
+        }
     }
 
     private fun resetSlides() {
@@ -88,13 +79,13 @@ class TeleOp : OpMode() {
 
         // DRIVETRAIN
         this.drivetrain.front.left.power =
-            (drivePower + turnPower + strafePower) * this.mlt.frontLeft
+            (drivePower + turnPower + strafePower) * this.mlt.driveTrainMlts.frontLeft
         this.drivetrain.front.right.power =
-            (drivePower - turnPower - strafePower) * this.mlt.frontRight
+            (drivePower - turnPower - strafePower) * this.mlt.driveTrainMlts.frontRight
         this.drivetrain.back.left.power =
-            (drivePower + turnPower - strafePower) * this.mlt.backLeft
+            (drivePower + turnPower - strafePower) * this.mlt.driveTrainMlts.backLeft
         this.drivetrain.back.right.power =
-            (drivePower - turnPower + strafePower) * this.mlt.backRight
+            (drivePower - turnPower + strafePower) * this.mlt.driveTrainMlts.backRight
     }
 
     private fun moveSlides() {

@@ -15,17 +15,22 @@ class LastPositions {
     var slideTilter = 0
 }
 
+class DriveTrainMlts{
+    var frontLeft = 1.0
+    var backLeft = 1.0
+    var frontRight = 0.9
+    var backRight = 0.9
+}
+
 class Multipliers {
+
+    var driveTrainMlts = DriveTrainMlts()
+
     var driver1Factor = 1.0
 
     val drive = 0.55
     val turn = 0.65
     val strafe = 0.65
-
-    val backRight = 1.0
-    val frontRight = 1.0
-    val backLeft = 1.2
-    val frontLeft = 1.2
 
     var slideHold = 0.15
     var slide = 1.0

@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode
 import com.acmerobotics.dashboard.FtcDashboard
 import com.amarcolini.joos.dashboard.JoosConfig
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.util.ElapsedTime
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
@@ -14,6 +13,7 @@ import org.firstinspires.ftc.teamcode.lib.UTILS
 import org.firstinspires.ftc.teamcode.lib.math.cap
 import org.firstinspires.ftc.teamcode.lib.math.normalize
 import org.firstinspires.ftc.teamcode.lib.vision.detection.ItemDetector
+import org.firstinspires.ftc.teamcode.lib.vision.detection.ItemDetectorJava.Location
 import org.firstinspires.ftc.teamcode.lib.vision.detection.Prop
 import org.openftc.easyopencv.OpenCvCamera
 import org.openftc.easyopencv.OpenCvCameraFactory
@@ -44,7 +44,7 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
 
     @JoosConfig
     object TurnMlts {
-        val base = 0.5
+        val base = 0.55
         val baseReached = 0.09
         val mlt = 0.4
         val mltReached = 0.2
@@ -80,8 +80,7 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
 
     fun ensureState(threshold: Int = 20) {
         var armDiff = abs(this.arm.currentPosition - this.lastPositions.arm)
-        var slideTilterDiff = abs(this.slideTilter.encoder.currentPosition - this.lastPositions
-            .slideTilter)
+        var slideTilterDiff = abs(this.slideTilter.encoder.currentPosition - this.lastPositions.slideTilter)
         // by running checkState continually you also ensure the state
         while((armDiff > threshold || slideTilterDiff > threshold) && this.checkState()) {
             telemetry.addData("armDiff: ", armDiff)
@@ -151,7 +150,7 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
         this.drivetrain.halt()
     }
 
-    fun driveForward(distance: Double, threshold: Int = 5, holdTime: Double = 1.0) {
+    private fun driveForward(distance: Double, threshold: Int = 5, holdTime: Double = 1.0) {
         UTILS.resetEncoder(this.odometryEncoders.left)
         UTILS.resetEncoder(this.odometryEncoders.right)
 
@@ -187,10 +186,10 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
                 if (errR < 0) -base
                 else base
 
-            this.drivetrain.front.left.power = errL / div + addL
-            this.drivetrain.front.right.power = errR / div + addR
-            this.drivetrain.back.left.power = errL / div + addL
-            this.drivetrain.back.right.power = errR / div + addR
+            this.drivetrain.front.left.power = (errL / div + addL) * this.mlt.driveTrainMlts.frontLeft
+            this.drivetrain.front.right.power = (errR / div + addR) * this.mlt.driveTrainMlts.frontRight
+            this.drivetrain.back.left.power = (errL / div + addL) * this.mlt.driveTrainMlts.backLeft
+            this.drivetrain.back.right.power = (errR / div + addR) * this.mlt.driveTrainMlts.backRight
 
             this.telemetry.addLine("Driving...")
             this.telemetry.addData("Tick error left", errL)
@@ -208,30 +207,40 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
     }
 
     fun placePixel(side: ItemDetector.Location) {
+
         when (side) {
             ItemDetector.Location.NONE, ItemDetector.Location.CENTER -> {
-                this.driveForward(71.0)
-                this.driveForward(-10.0)
+                this.driveForward(73.0)
+                this.telemetry.addLine("Finished pixel placement")
+
+                // position to according backdrop side
                 this.turn(0.0)
-                return
+                this.driveForward(-18.0)
             }
 
             ItemDetector.Location.LEFT -> {
                 this.driveForward(26.0)
                 this.turn(45.0, true)
+
+                // position to according backdrop side
+                this.driveForward(-32.0)
+                this.turn(0.0)
+                this.driveForward(33.0)
+                this.turn(0.0)
             }
 
             ItemDetector.Location.RIGHT -> {
                 this.driveForward(26.0)
                 this.turn(-45.0, true)
+
+                // position to according backdrop side
+                this.driveForward(-29.0)
             }
         }
 
-        this.driveForward(-14.0)
-        this.turn(0.0)
     }
 
-    fun park(side: ItemDetector.Location, turnMlt: Int = 1) {
+    fun park(side: ItemDetector.Location, turnMlt: Boolean = true) {
         when (side) {
             ItemDetector.Location.NONE, ItemDetector.Location.CENTER -> {
                 this.driveForward(-60.0)
@@ -244,7 +253,7 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
             }
         }
 
-        this.turn(90.0 * turnMlt)
+        this.turn(90.0, turnMlt)
         this.driveForward(75.0)
     }
 
@@ -285,6 +294,25 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
         UTILS.resetEncoder(this.slideTilter.encoder)
     }
 
+    private fun driveToBackboard(location: ItemDetector.Location, sideMlt:Int){
+        when (location) {
+            ItemDetector.Location.NONE, ItemDetector.Location.CENTER -> {
+                this.turn(sideMlt * 90.0)
+                this.driveForward(73.5)
+            }
+
+            ItemDetector.Location.LEFT -> {
+                this.turn(sideMlt * 90.0)
+                this.driveForward(71.5)
+            }
+
+            ItemDetector.Location.RIGHT -> {
+                this.turn(sideMlt * 90.0)
+                this.driveForward(73.5)
+            }
+        }
+    }
+
     override fun run() {
 
         while (this.checkState() &&
@@ -301,21 +329,26 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
             position = detector.location
         }
 
-        val inParkingArea =
+        val hasToPark =
                 (this.color == Color.RED && this.side == Side.RIGHT) ||
                 (this.color == Color.BLUE && this.side == Side.LEFT)
-        var sideMLt = when (side) {
+        var sideMlt = when (side) {
             Side.LEFT -> 1
-            Side.RIGHT -> 2
+            Side.RIGHT -> -1
         }
 
         this.placePixel(position)
 
-        if (inParkingArea) {
-            this.turn(sideMLt * 90.0)
-        } else {
-            this.turn(sideMLt * - 90.0)
+        if (hasToPark) {
+            this.driveToBackboard(position, sideMlt)
+            this.lastPositions.arm = -850
+            this.ensureState()
+            this.claw.open()
+            this.sleep(1000)
         }
+//        else {
+//            this.turn(sideMLt * - 90.0)
+//        }
 
         this.requestStop()
     }

@@ -18,7 +18,7 @@ class Prop(private val color: Color) {
     @JoosConfig
     private val bothHighHSV = Scalar(180.0, 255.0, 255.0) // (0-180, 0-255, 0-255)
     @JoosConfig
-    private val redLowHSV = Scalar(165.0, 0.0, 200.0) // (0-180, 0-255, 0-255)
+    private val redLowHSV = Scalar(155.0, 0.0, 150.0) // (0-180, 0-255, 0-255)
     @JoosConfig
     private val redHighHSV = Scalar(180.0, 255.0, 255.0) // (0-180, 0-255, 0-255)
 

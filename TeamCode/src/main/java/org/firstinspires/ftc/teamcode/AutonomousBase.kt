@@ -13,7 +13,6 @@ import org.firstinspires.ftc.teamcode.lib.UTILS
 import org.firstinspires.ftc.teamcode.lib.math.cap
 import org.firstinspires.ftc.teamcode.lib.math.normalize
 import org.firstinspires.ftc.teamcode.lib.vision.detection.ItemDetector
-import org.firstinspires.ftc.teamcode.lib.vision.detection.ItemDetectorJava.Location
 import org.firstinspires.ftc.teamcode.lib.vision.detection.Prop
 import org.openftc.easyopencv.OpenCvCamera
 import org.openftc.easyopencv.OpenCvCameraFactory
@@ -70,7 +69,7 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
 
         UTILS.lockMotor(
             this.arm,
-            this.mlt.armHold,
+            0.5,
             this.lastPositions.arm
         )
         this.printTelemetry()
@@ -206,55 +205,73 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
         this.drivetrain.halt()
     }
 
-    fun placePixel(side: ItemDetector.Location) {
-
-        when (side) {
+    fun placePixel(position: ItemDetector.Location, side: Side) {
+        when (position) {
             ItemDetector.Location.NONE, ItemDetector.Location.CENTER -> {
                 this.driveForward(73.0)
                 this.telemetry.addLine("Finished pixel placement")
-
-                // position to according backdrop side
-                this.turn(0.0)
-                this.driveForward(-18.0)
             }
 
             ItemDetector.Location.LEFT -> {
                 this.driveForward(26.0)
                 this.turn(45.0, true)
-
-                // position to according backdrop side
-                this.driveForward(-32.0)
-                this.turn(0.0)
-                this.driveForward(33.0)
-                this.turn(0.0)
             }
 
             ItemDetector.Location.RIGHT -> {
                 this.driveForward(26.0)
                 this.turn(-45.0, true)
-
-                // position to according backdrop side
-                this.driveForward(-29.0)
             }
         }
 
     }
 
-    fun park(side: ItemDetector.Location, turnMlt: Boolean = true) {
-        when (side) {
-            ItemDetector.Location.NONE, ItemDetector.Location.CENTER -> {
-                this.driveForward(-60.0)
-            }
+    private fun retractFromPixel(position: ItemDetector.Location, side: Side) {
+        if (
+            (position == ItemDetector.Location.LEFT && side == Side.RIGHT) ||
+            (position == ItemDetector.Location.RIGHT && side == Side.LEFT)
+        ) {
+            this.driveForward(-32.0)
+            this.turn(0.0)
+            this.driveForward(33.0)
+            this.turn(0.0)
+        } else if (
+            (position == ItemDetector.Location.RIGHT && side == Side.RIGHT) ||
+            (position == ItemDetector.Location.LEFT && side == Side.LEFT)
+        ) {
+            this.driveForward(-29.0)
+        } else {
+            this.turn(0.0)
+            this.driveForward(-18.0)
+        }
+    }
 
-            ItemDetector.Location.LEFT, ItemDetector.Location.RIGHT -> {
-                this.driveForward(-20.0)
-                this.turn(0.0)
-                this.driveForward(-30.0)
-            }
+    private fun driveToBackboard(position: ItemDetector.Location, side: Side, sideMlt:Int) {
+        val left = {
+            this.turn(sideMlt * 90.0)
+            this.driveForward(72.0)
         }
 
-        this.turn(90.0, turnMlt)
-        this.driveForward(75.0)
+        val right = {
+            this.turn(sideMlt * 90.0)
+            this.driveForward(80.0)
+        }
+
+        when (position) {
+            ItemDetector.Location.NONE, ItemDetector.Location.CENTER -> {
+                this.turn(sideMlt * 90.0)
+                this.driveForward(80.0)
+            }
+
+            ItemDetector.Location.LEFT -> {
+                if (side == Side.LEFT) left()
+                else right()
+            }
+
+            ItemDetector.Location.RIGHT -> {
+                if (side == Side.LEFT) right()
+                else left()
+            }
+        }
     }
 
     override fun setup() {
@@ -262,7 +279,7 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
 
         if ((this.color == Color.RED && this.side == Side.LEFT) || (this.color == Color.BLUE && this
                 .side == Side.RIGHT)) this.claw.open()
-        else this.claw.close()
+        else this.claw.grab()
         this.imu = this.hardwareMap.get(IMU::class.java, "imu")
 
         val imuParams = IMU.Parameters(RevHubOrientationOnRobot(
@@ -294,25 +311,6 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
         UTILS.resetEncoder(this.slideTilter.encoder)
     }
 
-    private fun driveToBackboard(location: ItemDetector.Location, sideMlt:Int){
-        when (location) {
-            ItemDetector.Location.NONE, ItemDetector.Location.CENTER -> {
-                this.turn(sideMlt * 90.0)
-                this.driveForward(73.5)
-            }
-
-            ItemDetector.Location.LEFT -> {
-                this.turn(sideMlt * 90.0)
-                this.driveForward(71.5)
-            }
-
-            ItemDetector.Location.RIGHT -> {
-                this.turn(sideMlt * 90.0)
-                this.driveForward(73.5)
-            }
-        }
-    }
-
     override fun run() {
 
         while (this.checkState() &&
@@ -337,11 +335,12 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
             Side.RIGHT -> -1
         }
 
-        this.placePixel(position)
+        this.placePixel(position, side)
+        this.retractFromPixel(position, side)
 
         if (hasToPark) {
-            this.driveToBackboard(position, sideMlt)
-            this.lastPositions.arm = -850
+            this.driveToBackboard(position, side, sideMlt)
+            this.lastPositions.arm = -900
             this.ensureState()
             this.claw.open()
             this.sleep(1000)

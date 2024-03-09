@@ -28,9 +28,9 @@ class Multipliers {
 
     var driver1Factor = 1.0
 
-    val drive = 0.55
+    val drive = 0.75
     val turn = 0.65
-    val strafe = 0.65
+    val strafe = 0.75
 
     var slideHold = 0.15
     var slide = 1.0
@@ -106,7 +106,7 @@ abstract class OpMode : LinearOpMode() {
         this.claw.right = this.hardwareMap.get(Servo::class.java, "rightClaw")
         this.claw.left = this.hardwareMap.get(Servo::class.java, "leftClaw")
 
-        this.claw.close()
+        this.claw.grab()
 
         this.planeLauncher = this.hardwareMap.get(Servo::class.java, "planeLauncher")
 

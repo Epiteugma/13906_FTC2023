@@ -145,9 +145,12 @@ class TeleOp : OpMode() {
 
     private fun moveClaw() {
         if(this.gamepad2.right_bumper)
-            this.claw.close()
+            this.claw.grab()
         else if(this.gamepad2.left_bumper)
             this.claw.open()
+        else if (this.gamepad2.touchpad)
+            this.claw.close()
+
 
         // CLAW PIVOT
         if (this.gamepad2.dpad_up) this.clawPivot.power = this.mlt.clawPivotPower

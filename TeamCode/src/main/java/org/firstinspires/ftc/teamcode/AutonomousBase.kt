@@ -259,7 +259,8 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
         when (position) {
             ItemDetector.Location.NONE, ItemDetector.Location.CENTER -> {
                 this.turn(sideMlt * 90.0)
-                this.driveForward(80.0)
+                this.driveForward(70.0)
+                this.turn(sideMlt * 90.0)
             }
 
             ItemDetector.Location.LEFT -> {
@@ -343,7 +344,11 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
             this.lastPositions.arm = -900
             this.ensureState()
             this.claw.open()
-            this.sleep(1000)
+
+            val start = System.currentTimeMillis()
+            while (this.checkState() && System.currentTimeMillis() - start < 1000) {
+                this.checkState()
+            }
         }
 //        else {
 //            this.turn(sideMLt * - 90.0)

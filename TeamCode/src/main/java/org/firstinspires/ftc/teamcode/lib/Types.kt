@@ -56,19 +56,19 @@ class Types {
         lateinit var left: Servo
         lateinit var right: Servo
 
-        fun grab() {
+        fun close() {
             this.left.position = 0.45
             this.right.position = 0.25
         }
 
-        fun close(){
-            this.left.position = 0.45
-            this.right.position = 0.0
+        fun grab() {
+            this.left.position = 0.35
+            this.right.position = 0.40
         }
 
         fun open() {
             this.left.position = 0.1
-            this.right.position = 0.7
+            this.right.position = 0.65
         }
     }
 }

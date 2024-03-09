@@ -69,7 +69,7 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
 
         UTILS.lockMotor(
             this.arm,
-            0.5,
+            0.4,
             this.lastPositions.arm
         )
         this.printTelemetry()
@@ -230,9 +230,9 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
             (position == ItemDetector.Location.LEFT && side == Side.RIGHT) ||
             (position == ItemDetector.Location.RIGHT && side == Side.LEFT)
         ) {
-            this.driveForward(-32.0)
+            this.driveForward(-35.0)
             this.turn(0.0)
-            this.driveForward(33.0)
+            this.driveForward(38.0)
             this.turn(0.0)
         } else if (
             (position == ItemDetector.Location.RIGHT && side == Side.RIGHT) ||
@@ -253,7 +253,7 @@ open class AutonomousBase(private val color:Color, private val side:Side) : OpMo
 
         val right = {
             this.turn(sideMlt * 90.0)
-            this.driveForward(80.0)
+            this.driveForward(70.5)
         }
 
         when (position) {

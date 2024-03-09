@@ -68,7 +68,7 @@ class TeleOp : OpMode() {
 
     private fun toggleDrive1Factor() {
         if (gamepad1.dpad_up) this.mlt.driver1Factor = 1.0
-        else if (gamepad1.dpad_down) this.mlt.driver1Factor = 0.75
+        else if (gamepad1.dpad_down) this.mlt.driver1Factor = 0.8
     }
 
     private fun moveRobot() {
@@ -148,7 +148,7 @@ class TeleOp : OpMode() {
             this.claw.grab()
         else if(this.gamepad2.left_bumper)
             this.claw.open()
-        else if (this.gamepad2.touchpad)
+        else if (this.gamepad2.cross)
             this.claw.close()
 
 

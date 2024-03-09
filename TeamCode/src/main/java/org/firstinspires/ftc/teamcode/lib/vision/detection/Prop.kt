@@ -18,7 +18,7 @@ class Prop(private val color: Color) {
     @JoosConfig
     private val bothHighHSV = Scalar(180.0, 255.0, 255.0) // (0-180, 0-255, 0-255)
     @JoosConfig
-    private val redLowHSV = Scalar(155.0, 0.0, 150.0) // (0-180, 0-255, 0-255)
+    private val redLowHSV = Scalar(100.0, 0.0, 80.0) // (0-180, 0-255, 0-255)
     @JoosConfig
     private val redHighHSV = Scalar(180.0, 255.0, 255.0) // (0-180, 0-255, 0-255)
 
@@ -35,8 +35,8 @@ class Prop(private val color: Color) {
                 this.threshold = 0.15
             }
             else -> {
-                this.lowHSV = Scalar(0.0, 180.0, 160.0)
-                this.highHSV = Scalar(5.0, 230.0, 240.0)
+                this.lowHSV = bothLowHSV
+                this.highHSV =  bothHighHSV
                 this.threshold = 0.15
             }
         }
